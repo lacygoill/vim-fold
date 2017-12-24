@@ -1,0 +1,48 @@
+fu! fold#md#heading_depth(lnum) abort "{{{1
+    let level     = 0
+    let thisline  = getline(a:lnum)
+    let hashCount = len(matchstr(thisline, '^#\{1,6}'))
+
+    if hashCount > 0
+        let level = hashCount
+    else
+        if thisline != ''
+            let nextline = getline(a:lnum + 1)
+            if nextline =~ '^=\+\s*$'
+                let level = 1
+            elseif nextline =~ '^-\+\s*$'
+                let level = 2
+            endif
+        endif
+    endif
+    " temporarily commented because it makes us gain 0.5 seconds when loading
+    " Vim notes
+    "         if level > 0 && s:line_is_fenced(a:lnum)
+    "             " Ignore # or === if they appear within fenced code blocks
+    "             return 0
+    "         endif
+    return level
+endfu
+
+fu! fold#md#nested() abort "{{{1
+    let depth = s:heading_depth(v:lnum)
+    if depth > 0
+        return '>'.depth
+    else
+        return '='
+    endif
+endfu
+
+fu! fold#md#stacked() abort "{{{1
+    if s:heading_depth(v:lnum) > 0
+        return '>1'
+    else
+        return '='
+    endif
+endfu
+
+fu! fold#md#toggle_fde() abort "{{{1
+    let &l:fde = &l:fde ==# 'fold#md_stacked()'
+    \?               'fold#md_nested()'
+    \:               'fold#md_stacked()'
+endfu
