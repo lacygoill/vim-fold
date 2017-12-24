@@ -39,7 +39,9 @@ fu! fold#text() abort "{{{1
         let indent = line =~# '{{'.'{\d\+\s*$' ? repeat(' ', (v:foldlevel-1)*3) : ''
     endif
     let cml   = substitute(get(split(&l:cms, '%s'), 0, ''), '\s*$', '', '')
-    let title = substitute(line, '\v^\s*%('.cml.')\s*|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
+    "                                               ┌ for commented code
+    "                                             ┌─┤
+    let title = substitute(line, '\v^\s*%('.cml.')\@?\s*|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
 
     let title = &ft ==# 'vim'
     \?              substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
