@@ -43,12 +43,12 @@ fu! fold#text() abort "{{{1
     "                                             ┌─┤
     let title = substitute(line, '\v^\s*%('.cml.')\@?\s*|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
 
-    let title = &ft ==# 'vim'
-    \?              substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
+    let title = &ft ==# 'markdown'
+    \?              substitute(getline(v:foldstart), '^#\+\s*', '', '')
     \:          &ft ==# 'sh'
     \?              substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
-    \:          &ft ==# 'markdown'
-    \?              substitute(getline(v:foldstart), '^#\+\s*', '', '')
+    \:          &ft ==# 'vim'
+    \?              substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
     \:              title
 
     if get(b:, 'my_title_full', 0)
