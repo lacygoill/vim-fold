@@ -25,7 +25,7 @@ fu! fold#md#heading_depth(lnum) abort "{{{1
 endfu
 
 fu! fold#md#nested() abort "{{{1
-    let depth = s:heading_depth(v:lnum)
+    let depth = fold#md#heading_depth(v:lnum)
     if depth > 0
         return '>'.depth
     else
@@ -34,7 +34,7 @@ fu! fold#md#nested() abort "{{{1
 endfu
 
 fu! fold#md#stacked() abort "{{{1
-    if s:heading_depth(v:lnum) > 0
+    if fold#md#heading_depth(v:lnum) > 0
         return '>1'
     else
         return '='
@@ -42,7 +42,7 @@ fu! fold#md#stacked() abort "{{{1
 endfu
 
 fu! fold#md#toggle_fde() abort "{{{1
-    let &l:fde = &l:fde ==# 'fold#md_stacked()'
-    \?               'fold#md_nested()'
-    \:               'fold#md_stacked()'
+    let &l:fde = &l:fde ==# 'fold#md#stacked()'
+    \?               'fold#md#nested()'
+    \:               'fold#md#stacked()'
 endfu

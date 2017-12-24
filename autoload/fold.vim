@@ -33,7 +33,7 @@
 fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
     if &ft ==# 'markdown'
-        let level = s:md_heading_depth(v:foldstart)
+        let level = fold#md#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
         let indent = line =~# '{{'.'{\d\+\s*$' ? repeat(' ', (v:foldlevel-1)*3) : ''
