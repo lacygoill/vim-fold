@@ -36,12 +36,14 @@ fu! fold#text() abort "{{{1
         let level = fold#md#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
-        let indent = line =~# '{{'.'{\d\+\s*$' ? repeat(' ', (v:foldlevel-1)*3) : ''
+        let indent = line =~# '{{'.'{\d\+\s*$'
+        \?               repeat(' ', (v:foldlevel-1)*3)
+        \:               matchstr(getline(v:foldstart), '^\s*')
     endif
     let cml   = substitute(get(split(&l:cms, '%s'), 0, ''), '\s*$', '', '')
-    "                                               ┌ for commented code
-    "                                             ┌─┤
     let title = substitute(line, '\v^\s*%('.cml.')\@?\s*|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
+    "                                             └─┤
+    "                                               └ for commented code
 
     let title = &ft ==# 'markdown'
     \?              substitute(getline(v:foldstart), '^#\+\s*', '', '')
