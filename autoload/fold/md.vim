@@ -26,19 +26,15 @@ endfu
 
 fu! fold#md#nested() abort "{{{1
     let depth = fold#md#heading_depth(v:lnum)
-    if depth > 0
-        return '>'.depth
-    else
-        return '='
-    endif
+    return depth > 0
+    \?         '>'.depth
+    \:         '='
 endfu
 
 fu! fold#md#stacked() abort "{{{1
-    if fold#md#heading_depth(v:lnum) > 0
-        return '>1'
-    else
-        return '='
-    endif
+    return fold#md#heading_depth(v:lnum) > 0
+    \?         '>1'
+    \:         '='
 endfu
 
 fu! fold#md#toggle_fde() abort "{{{1
