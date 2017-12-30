@@ -30,6 +30,55 @@
 "     endif
 " endfu
 
+fu! fold#motion(lhs) abort "{{{1
+    let g:motion_to_repeat = a:lhs
+    mark '
+
+    " Special Case:{{{
+    "
+    " If we're in a markdown file, and the folds are stacked, all folds have the
+    " same  level (`1`). So,  `[Z` and  `]Z`  won't be  able  to get  us to  the
+    " beginning / ending of the containing fold; technically there's none.
+    "
+    " We try to emulate the default behaviour of `[z` and `]z`.
+    "}}}
+    if  &ft ==# 'markdown'
+    \&& foldlevel('.') == 1
+        let line = getline('.')
+        if a:lhs ==# '[Z' && line =~# '^#\{2,}'
+            let level = len(matchstr(line, '^#\+'))
+            " search for beginning of containing fold
+            call search('\v^#{'.(level-1).'}#@!', 'bW')
+            "               └─────────────────┤
+            "                                 └ containing fold
+            return
+        elseif a:lhs ==# ']Z'
+            let next_line = getline(line('.')+1)
+            if next_line =~# '^#\{2,}'
+                let level = len(matchstr(next_line, '^#\+'))
+                " search for ending of containing fold
+                call search('\v\ze\n#{'.(level-1).'}#@!|.*%$', 'W')
+                "              │   │                   └───┤
+                "              │   │                       └ OR, look for the last line
+                "              │   │                         Why? The containing fold may be the last fold.
+                "              │   │                         In this case, there will be no next fold,
+                "              │   │                         and the previous pattern will fail.
+                "              └───┤
+                "                  └ ending of containing fold =
+                "                        just before the first line of the next fold
+                "                        whose level is the same as the containing one
+                return
+            endif
+        endif
+    endif
+
+    let keys = a:lhs ==# '[z' || a:lhs ==# ']z'
+    \?             (a:lhs ==# '[z' ? 'zk' : 'zj')
+    \:             tolower(a:lhs)
+
+    call feedkeys(v:count1 . keys . 'zvzz', 'int')
+endfu
+
 fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
     if &ft ==# 'markdown'
