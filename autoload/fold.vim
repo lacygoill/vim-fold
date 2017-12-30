@@ -42,9 +42,9 @@ fu! fold#motion(lhs) abort "{{{1
     "
     " We try to emulate the default behaviour of `[z` and `]z`.
     "}}}
-    if  &ft ==# 'markdown'
-    \&& foldlevel('.') == 1
+    if  &ft ==# 'markdown' && foldlevel('.') == 1
         let line = getline('.')
+
         if a:lhs ==# '[Z' && line =~# '^#\{2,}'
             let level = len(matchstr(line, '^#\+'))
             " search for beginning of containing fold
