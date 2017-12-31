@@ -34,7 +34,7 @@ endfu
 fu! fold#md#stacked() abort "{{{1
     return fold#md#heading_depth(v:lnum) > 0
     \?         '>1'
-    \:         '1'
+    \:         '='
 endfu
 
 fu! fold#md#toggle_fde() abort "{{{1
