@@ -78,7 +78,7 @@ fu! fold#motion(lhs) abort "{{{1
     \?             (a:lhs ==# '[z' ? 'zk' : 'zj')
     \:             tolower(a:lhs)
 
-    call feedkeys(v:count1 . keys . 'zvzz', 'int')
+    call feedkeys(v:count1 . keys . 'zv', 'int')
 endfu
 
 fu! fold#text() abort "{{{1
