@@ -35,12 +35,14 @@ fu! fold#motion(lhs) abort "{{{1
     mark '
 
     " Special Case:{{{
-    "
     " If we're in a markdown file, and the folds are stacked, all folds have the
     " same  level (`1`). So,  `[Z` and  `]Z`  won't be  able  to get  us to  the
     " beginning / ending of the containing fold; technically there's none.
     "
-    " We try to emulate the default behaviour of `[z` and `]z`.
+    " In this case, we still want `[Z` and `]Z` to move the cursor.
+    " We try to  emulate the default behaviour of `[z`  and `]z`, by recognizing
+    " the different  fold levels via  the number of #  at the beginning  of each
+    " fold.
     "}}}
     if  &ft ==# 'markdown' && foldlevel('.') == 1
         let line = getline('.')
