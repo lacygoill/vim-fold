@@ -92,7 +92,7 @@ fu! fold#text() abort "{{{1
         \:               matchstr(getline(v:foldstart), '^\s*')
     endif
     let cml   = substitute(get(split(&l:cms, '%s'), 0, ''), '\s*$', '', '')
-    let title = substitute(line, '\v^\s*%('.cml.')\@?\s*|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
+    let title = substitute(line, '\v^\s*%('.cml.')\@?\s?|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
     "                                             └─┤
     "                                               └ for commented code
 
