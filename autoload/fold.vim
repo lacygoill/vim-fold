@@ -109,6 +109,6 @@ fu! fold#text() abort "{{{1
         let linecount = '['.foldsize.']'.repeat(' ', 4 - strchars(foldsize))
         return indent.' '.linecount.' '.title
     else
-        return indent.' '.title
+        return indent.title
     endif
 endfu
