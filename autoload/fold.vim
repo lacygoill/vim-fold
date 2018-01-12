@@ -83,6 +83,7 @@ endfu
 
 fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
+    " get the desired level of indentation for the title
     if &ft ==# 'markdown'
         let level = fold#md#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
@@ -91,11 +92,16 @@ fu! fold#text() abort "{{{1
         \?               repeat(' ', (v:foldlevel-1)*3)
         \:               matchstr(getline(v:foldstart), '^\s*')
     endif
-    let cml   = substitute(get(split(&l:cms, '%s'), 0, ''), '\s*$', '', '')
+
+    " get a possible comment leader
+    let cml = substitute(get(split(&l:cms, '%s'), 0, ''), '\s*$', '', '')
+
+    " remove general noise
     let title = substitute(line, '\v^\s*%('.cml.')\@?\s?|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
     "                                             └─┤
     "                                               └ for commented code
 
+    " remove filetype specific noise
     let title = &ft ==# 'markdown'
     \?              substitute(getline(v:foldstart), '^#\+\s*', '', '')
     \:          &ft ==# 'sh'
