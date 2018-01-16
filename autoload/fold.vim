@@ -31,7 +31,7 @@
 " endfu
 
 fu! fold#motion(lhs) abort "{{{1
-    let g:motion_to_repeat = a:lhs
+    sil! call lg#motion#repeatable#main#set_last_used(a:lhs, 1)
     mark '
 
     " Special Case:{{{
