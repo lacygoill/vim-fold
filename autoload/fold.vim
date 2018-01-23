@@ -30,9 +30,15 @@
 "     endif
 " endfu
 
-fu! fold#motion(lhs) abort "{{{1
-    sil! call lg#motion#repeatable#make#set_last_used(a:lhs, 1)
-    mark '
+fu! fold#motion_go(lhs, mode) abort "{{{1
+    if a:mode ==# 'n'
+        norm! m'
+    elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
+        " If we  were initially  in visual mode,  we've left it  as soon  as the
+        " mapping pressed Enter  to execute the call to this  function.  We need
+        " to get back in visual mode, before the search.
+        norm! gv
+    endif
 
     " Special Case:{{{
     " If we're in a markdown file, and the folds are stacked, all folds have the
@@ -78,7 +84,33 @@ fu! fold#motion(lhs) abort "{{{1
     \?             (a:lhs ==# '[z' ? 'zk' : 'zj')
     \:             tolower(a:lhs)
 
-    call feedkeys(v:count1 . keys . 'zv', 'int')
+    exe 'norm! '.v:count1.keys
+
+    " If you  try to  simplify this  block in a  single statement,  don't forget
+    " this: the function shouldn't do anything in operator-pending mode.
+    if a:mode ==# 'n'
+        norm! zMzv
+    elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
+        norm! zv
+    endif
+endfu
+
+fu! fold#motion_rhs(lhs) abort "{{{1
+    let mode = mode(1)
+
+    " If we're in visual block mode, we can't pass `C-v` directly.
+    " It's going to by directly typed on the command-line.
+    " On the command-line, `C-v` means:
+    "
+    "     “insert the next character literally”
+    "
+    " The solution is to double `C-v`.
+    if mode ==# "\<c-v>"
+        let mode = "\<c-v>\<c-v>"
+    endif
+
+    return printf(":\<c-u>call fold#motion_go(%s,%s)\<cr>",
+    \             string(a:lhs), string(mode))
 endfu
 
 fu! fold#text() abort "{{{1
