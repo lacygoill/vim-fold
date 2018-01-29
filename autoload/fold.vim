@@ -141,7 +141,7 @@ fu! fold#text() abort "{{{1
     \:          &ft ==# 'vim'
     \?              substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
     \:          &ft ==# 'python'
-    \?              substitute(title, '^def\s\+\|\%(^def\s\+.*\)\@<=:', '', 'g')
+    \?              substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
     \:              title
 
     if get(b:, 'my_title_full', 0)
