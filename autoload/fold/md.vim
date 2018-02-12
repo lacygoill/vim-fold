@@ -38,7 +38,7 @@ fu! fold#md#stacked() abort "{{{1
 endfu
 
 fu! fold#md#toggle_fde() abort "{{{1
-    let &l:fde = &l:fde ==# 'fold#md#stacked()'
+    let &l:fde = &l:fde is# 'fold#md#stacked()'
     \?               'fold#md#nested()'
     \:               'fold#md#stacked()'
 endfu

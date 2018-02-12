@@ -20,7 +20,7 @@
 " endfu
 
 " fu! s:line_is_fenced(lnum) abort {{{1
-"     if get(b:, 'current_syntax', '') ==# 'markdown'
+"     if get(b:, 'current_syntax', '') is# 'markdown'
 "         " It's cheap to check if the current line has 'markdownCode' syntax group
 "         return s:has_syntax_group(a:lnum)
 "     else
@@ -31,7 +31,7 @@
 " endfu
 
 fu! fold#motion_go(lhs, mode) abort "{{{1
-    if a:mode ==# 'n'
+    if a:mode is# 'n'
         norm! m'
     elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
         " If we  were initially  in visual mode,  we've left it  as soon  as the
@@ -50,17 +50,17 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
     " the different  fold levels via  the number of #  at the beginning  of each
     " fold.
     "}}}
-    if  &ft ==# 'markdown' && foldlevel('.') == 1
+    if  &ft is# 'markdown' && foldlevel('.') == 1
         let line = getline('.')
 
-        if a:lhs ==# '[Z' && line =~# '^#\{2,}'
+        if a:lhs is# '[Z' && line =~# '^#\{2,}'
             let level = len(matchstr(line, '^#\+'))
             " search for beginning of containing fold
             call search('\v^#{'.(level-1).'}#@!', 'bW')
             "               └─────────────────┤
             "                                 └ containing fold
             return
-        elseif a:lhs ==# ']Z'
+        elseif a:lhs is# ']Z'
             let next_line = getline(line('.')+1)
             if next_line =~# '^#\{2,}'
                 let level = len(matchstr(next_line, '^#\+'))
@@ -80,15 +80,15 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
         endif
     endif
 
-    let keys = a:lhs ==# '[z' || a:lhs ==# ']z'
-    \?             (a:lhs ==# '[z' ? 'zk' : 'zj')
+    let keys = a:lhs is# '[z' || a:lhs is# ']z'
+    \?             (a:lhs is# '[z' ? 'zk' : 'zj')
     \:             tolower(a:lhs)
 
     exe 'norm! '.v:count1.keys
 
     " If you  try to  simplify this  block in a  single statement,  don't forget
     " this: the function shouldn't do anything in operator-pending mode.
-    if a:mode ==# 'n'
+    if a:mode is# 'n'
         norm! zMzv
     elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
         norm! zv
@@ -105,7 +105,7 @@ fu! fold#motion_rhs(lhs) abort "{{{1
     "     “insert the next character literally”
     "
     " The solution is to double `C-v`.
-    if mode ==# "\<c-v>"
+    if mode is# "\<c-v>"
         let mode = "\<c-v>\<c-v>"
     endif
 
@@ -116,7 +116,7 @@ endfu
 fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
     " get the desired level of indentation for the title
-    if &ft ==# 'markdown'
+    if &ft is# 'markdown'
         let level = fold#md#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
@@ -134,13 +134,13 @@ fu! fold#text() abort "{{{1
     "                                               └ for commented code
 
     " remove filetype specific noise
-    let title = &ft ==# 'markdown'
+    let title = &ft is# 'markdown'
     \?              substitute(getline(v:foldstart), '^#\+\s*', '', '')
-    \:          &ft ==# 'sh'
+    \:          &ft is# 'sh'
     \?              substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
-    \:          &ft ==# 'vim'
+    \:          &ft is# 'vim'
     \?              substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
-    \:          &ft ==# 'python'
+    \:          &ft is# 'python'
     \?              substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
     \:              title
 
