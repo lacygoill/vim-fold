@@ -50,7 +50,7 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
     " the different  fold levels via  the number of #  at the beginning  of each
     " fold.
     "}}}
-    if  &ft is# 'markdown' && foldlevel('.') == 1
+    if  &ft is# 'markdown' && foldlevel('.') ==# 1
         let line = getline('.')
 
         if a:lhs is# '[Z' && line =~# '^#\{2,}'
