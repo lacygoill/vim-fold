@@ -7,7 +7,7 @@
 "     let fence_position = searchpairpos(start_fence, '', end_fence, 'W')
 "
 "     call cursor(pos)
-"     return fence_position != [0,0]
+"     return fence_position !=# [0,0]
 " endfu
 
 " fu! s:has_syntax_group(lnum) abort {{{1
