@@ -53,14 +53,14 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
     if  &ft is# 'markdown' && foldlevel('.') ==# 1
         let line = getline('.')
 
-        if a:lhs is# '[Z' && line =~# '^#\{2,}'
+        if a:lhs is# '[z' && line =~# '^#\{2,}'
             let level = len(matchstr(line, '^#\+'))
             " search for beginning of containing fold
             call search('\v^#{'.(level-1).'}#@!', 'bW')
             "               └─────────────────┤
             "                                 └ containing fold
             return
-        elseif a:lhs is# ']Z'
+        elseif a:lhs is# ']z'
             let next_line = getline(line('.')+1)
             if next_line =~# '^#\{2,}'
                 let level = len(matchstr(next_line, '^#\+'))
@@ -80,8 +80,8 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
         endif
     endif
 
-    let keys = a:lhs is# '[z' || a:lhs is# ']z'
-    \?             (a:lhs is# '[z' ? 'zk' : 'zj')
+    let keys = a:lhs is# '[Z' || a:lhs is# ']Z'
+    \?             (a:lhs is# '[Z' ? 'zk' : 'zj')
     \:             tolower(a:lhs)
 
     exe 'norm! '.v:count1.keys
