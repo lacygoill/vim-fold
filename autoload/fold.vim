@@ -126,7 +126,10 @@ fu! fold#text() abort "{{{1
     endif
 
     " get a possible comment leader
-    let cml = substitute(get(split(&l:cms, '%s'), 0, ''), '\s*$', '', '')
+    let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\v'
+    "           │
+    "           └ the comment leader could contain special characters,
+    "             like % in a tex file
 
     " remove general noise
     let title = substitute(line, '\v^\s*%('.cml.')\@?\s?|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
