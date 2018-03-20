@@ -7,7 +7,7 @@
 "     let fence_position = searchpairpos(start_fence, '', end_fence, 'W')
 "
 "     call cursor(pos)
-"     return fence_position !=# [0,0]
+"     return fence_position != [0,0]
 " endfu
 
 " fu! s:has_syntax_group(lnum) abort {{{1
@@ -50,7 +50,7 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
     " the different  fold levels via  the number of #  at the beginning  of each
     " fold.
     "}}}
-    if  &ft is# 'markdown' && foldlevel('.') ==# 1
+    if  &ft is# 'markdown' && foldlevel('.') == 1
         let line = getline('.')
 
         if a:lhs is# '[z' && line =~# '^#\{2,}'
