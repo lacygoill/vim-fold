@@ -81,8 +81,8 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
     endif
 
     let keys = a:lhs is# '[Z' || a:lhs is# ']Z'
-    \?             (a:lhs is# '[Z' ? 'zk' : 'zj')
-    \:             tolower(a:lhs)
+           \ ?     (a:lhs is# '[Z' ? 'zk' : 'zj')
+           \ :     tolower(a:lhs)
 
     exe 'norm! '.v:count1.keys
 
@@ -121,8 +121,8 @@ fu! fold#text() abort "{{{1
         let indent = repeat(' ', (level-1)*3)
     else
         let indent = line =~# '{{'.'{\d\+\s*$'
-        \?               repeat(' ', (v:foldlevel-1)*3)
-        \:               matchstr(getline(v:foldstart), '^\s*')
+                 \ ?     repeat(' ', (v:foldlevel-1)*3)
+                 \ :     matchstr(getline(v:foldstart), '^\s*')
     endif
 
     " get a possible comment leader
@@ -138,14 +138,14 @@ fu! fold#text() abort "{{{1
 
     " remove filetype specific noise
     let title = &ft is# 'markdown'
-    \?              substitute(getline(v:foldstart), '^#\+\s*', '', '')
-    \:          &ft is# 'sh'
-    \?              substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
-    \:          &ft is# 'vim'
-    \?              substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
-    \:          &ft is# 'python'
-    \?              substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
-    \:              title
+            \ ?     substitute(getline(v:foldstart), '^#\+\s*', '', '')
+            \ : &ft is# 'sh'
+            \ ?     substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
+            \ : &ft is# 'vim'
+            \ ?     substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
+            \ : &ft is# 'python'
+            \ ?     substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
+            \ :     title
 
     if get(b:, 'my_title_full', 0)
         let foldsize  = (v:foldend - v:foldstart)

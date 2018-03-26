@@ -27,18 +27,18 @@ endfu
 fu! fold#md#nested() abort "{{{1
     let depth = fold#md#heading_depth(v:lnum)
     return depth > 0
-    \?         '>'.depth
-    \:         '='
+       \ ?     '>'.depth
+       \ :     '='
 endfu
 
 fu! fold#md#stacked() abort "{{{1
     return fold#md#heading_depth(v:lnum) > 0
-    \?         '>1'
-    \:         '='
+       \ ?     '>1'
+       \ :     '='
 endfu
 
 fu! fold#md#toggle_fde() abort "{{{1
     let &l:fde = &l:fde is# 'fold#md#stacked()'
-    \?               'fold#md#nested()'
-    \:               'fold#md#stacked()'
+             \ ?     'fold#md#nested()'
+             \ :     'fold#md#stacked()'
 endfu
