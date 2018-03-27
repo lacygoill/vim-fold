@@ -150,7 +150,7 @@ fu! fold#text() abort "{{{1
     if get(b:, 'my_title_full', 0)
         let foldsize  = (v:foldend - v:foldstart)
         let linecount = '['.foldsize.']'.repeat(' ', 4 - strchars(foldsize))
-        return indent.linecount.title
+        return indent . (foldsize != 1 ? linecount : '') . title
     else
         return indent.title
     endif
