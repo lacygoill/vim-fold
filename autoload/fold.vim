@@ -147,7 +147,7 @@ fu! fold#text() abort "{{{1
             \ ?     substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
             \ :     title
 
-    if get(b:, 'my_title_full', 0)
+    if get(b:, 'foldtitle_full', 0)
         let foldsize  = (v:foldend - v:foldstart)
         let linecount = '['.foldsize.']'.repeat(' ', 4 - strchars(foldsize))
         return indent . (foldsize > 1 ? linecount : '') . title
