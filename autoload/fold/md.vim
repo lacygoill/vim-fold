@@ -92,17 +92,14 @@ fu! fold#md#sort_by_size(lnum1,lnum2) abort "{{{1
         " We're going to maybe move the  current fold; but it's not necessary if
         " there's only 1 fold.
         if len(folds) > 1
-            " get relevant info about the last fold which we added to `folds`
-            " at the end of the previous iteration
-            let size = folds[-1].size
-            let foldstart = folds[-1].foldstart
-            let foldend = folds[-1].foldend
-
             for f in folds
                 " if you find a previous fold which is bigger
-                if f.size > size
+                if f.size > folds[-1].size
                     " move last fold above
-                    sil exe foldstart.','.foldend.'m ' . (f.foldstart - 1)
+                    sil exe printf('%d,%dm %d',
+                    \              folds[-1].foldstart,
+                    \              folds[-1].foldend,
+                    \              f.foldstart - 1)
                     return fold#md#sort_by_size(a:lnum1,a:lnum2)
                 endif
             endfor
