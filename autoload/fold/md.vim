@@ -44,7 +44,18 @@ fu! fold#md#sort_by_size(lnum1,lnum2) abort "{{{1
     " What's this?{{{
     "
     " A pattern describing the end of a fold.
-    " (to be more accurate, its last newline or the end of the buffer)
+    " To be more accurate, its last newline or the end of the buffer.
+    "}}}
+    " Why \{1,lvl}?{{{
+    "
+    " We mustn't stop when we find a fold whose level is bigger than `lvl`.
+    " Those are children folds; they should be ignored.
+    " Thus, the quantifier must NOT go beyond `lvl`.
+    "
+    " Also, we must stop if we find a fold whose level is smaller.
+    " Those are parents.
+    " Thus, the quantifier MUST go below `lvl`.
+    "
     "}}}
     let pat = '\n\%(#\{1,'.lvl.'}#\@!\)\|\%$'
 
@@ -87,7 +98,6 @@ fu! fold#md#sort_by_size(lnum1,lnum2) abort "{{{1
             let foldstart = folds[-1].foldstart
             let foldend = folds[-1].foldend
 
-            " move last fold if necessary
             for f in folds
                 " if you find a previous fold which is bigger
                 if f.size > size
@@ -100,7 +110,7 @@ fu! fold#md#sort_by_size(lnum1,lnum2) abort "{{{1
 
         let orig_lnum = line('.')
         let foldend = search(pat, 'W', a:lnum2)
-        "                  ┌ stop if you find a fold whose level is < `lvl`
+        "                  ┌ stop if you've found a fold whose level is < `lvl`
         "                  │
         if foldend == 0 || match(getline(orig_lnum+1), '^\%(#\{'.(lvl-1).'}#\@!\)') ==# 0
             break
