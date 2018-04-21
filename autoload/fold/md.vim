@@ -89,21 +89,17 @@ fu! fold#md#sort_by_size(lnum1,lnum2) abort "{{{1
     "                • it re-calls the function to continue the process
     "}}}
     while foldend > 0
-        " We're going to maybe move the  current fold; but it's not necessary if
-        " there's only 1 fold.
-        if len(folds) > 1
-            for f in folds
-                " if you find a previous fold which is bigger
-                if f.size > folds[-1].size
-                    " move last fold above
-                    sil exe printf('%d,%dm %d',
-                    \              folds[-1].foldstart,
-                    \              folds[-1].foldend,
-                    \              f.foldstart - 1)
-                    return fold#md#sort_by_size(a:lnum1,a:lnum2)
-                endif
-            endfor
-        endif
+        for f in folds
+            " if you find a previous fold which is bigger
+            if f.size > folds[-1].size
+                " move last fold above
+                sil exe printf('%d,%dm %d',
+                \              folds[-1].foldstart,
+                \              folds[-1].foldend,
+                \              f.foldstart - 1)
+                return fold#md#sort_by_size(a:lnum1,a:lnum2)
+            endif
+        endfor
 
         let orig_lnum = line('.')
         let foldend = search(pat, 'W', a:lnum2)
