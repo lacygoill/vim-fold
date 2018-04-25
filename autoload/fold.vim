@@ -87,11 +87,7 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
 
     exe 'norm! '.v:count1.keys
 
-    " If you  try to  simplify this  block in a  single statement,  don't forget
-    " this: the function shouldn't do anything in operator-pending mode.
-    if a:mode is# 'n'
-        norm! zMzv
-    elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
+    if a:mode isnot# 'no'
         norm! zv
     endif
 endfu
