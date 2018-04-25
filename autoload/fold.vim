@@ -40,6 +40,8 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
         norm! gv
     endif
 
+    let line = getline('.')
+
     " Special Case:{{{
     " If we're in a markdown file, and the folds are stacked, all folds have the
     " same  level (`1`). So,  `[Z` and  `]Z`  won't be  able  to get  us to  the
@@ -57,6 +59,7 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
             let level = len(matchstr(line, '^#\+'))
             " search for beginning of containing fold
             return search('\v^#{'.(level-1).'}#@!', 'bW')
+
         elseif a:lhs is# ']z'
             let next_line = getline(line('.')+1)
             if next_line =~# '^#\{2,}'
@@ -107,8 +110,14 @@ fu! fold#motion_rhs(lhs) abort "{{{1
         let mode = "\<c-v>\<c-v>"
     endif
 
-    return printf(":\<c-u>call fold#motion_go(%s,%s)\<cr>",
-    \             string(a:lhs), string(mode))
+    " Why `mode is# 'no' ? 'V' : ''`?{{{
+    "
+    " In operator-pending mode, usually, we want to operate on whole lines.
+    "}}}
+    return printf("%s:\<c-u>call fold#motion_go(%s,%s)\<cr>",
+    \             mode is# 'no' ? 'V' : '',
+    \             string(a:lhs),
+    \             string(mode))
 endfu
 
 fu! fold#text() abort "{{{1
