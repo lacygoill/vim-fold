@@ -78,9 +78,11 @@ fu! fold#motion_go(lhs, mode) abort "{{{1
         endif
     endif
 
-    let keys = a:lhs is# '[Z' || a:lhs is# ']Z'
-           \ ?     (a:lhs is# '[Z' ? 'zk' : 'zj')
-           \ :     tolower(a:lhs)
+    let keys = a:lhs is# '[Z'
+           \ ?     'zk'
+           \ : a:lhs is# ']Z'
+           \ ?     'zj'
+           \ :     a:lhs
 
     exe 'norm! '.v:count1.keys
 
