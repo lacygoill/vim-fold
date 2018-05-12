@@ -1,10 +1,10 @@
 fu! fold#md#heading_depth(lnum) abort "{{{1
-    let level     = 0
-    let thisline  = getline(a:lnum)
-    let hashCount = len(matchstr(thisline, '^#\{1,6}'))
+    let level      = 0
+    let thisline   = getline(a:lnum)
+    let hash_count = len(matchstr(thisline, '^#\{1,6}'))
 
-    if hashCount > 0
-        let level = hashCount
+    if hash_count > 0
+        let level = hash_count
     else
         if thisline isnot# ''
             let nextline = getline(a:lnum + 1)
