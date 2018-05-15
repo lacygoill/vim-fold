@@ -119,7 +119,7 @@ endfu
 fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
     " get the desired level of indentation for the title
-    if &ft is# 'markdown'
+    if &ft =~# 'markdown'
         let level = fold#md#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
@@ -140,7 +140,7 @@ fu! fold#text() abort "{{{1
     "                                               └ for commented code
 
     " remove filetype specific noise
-    let title = &ft is# 'markdown'
+    let title = &ft =~# 'markdown'
             \ ?     substitute(getline(v:foldstart), '^#\+\s*', '', '')
             \ : &ft is# 'sh'
             \ ?     substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
