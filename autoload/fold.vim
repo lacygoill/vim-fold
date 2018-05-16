@@ -119,13 +119,7 @@ endfu
 fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
     " get the desired level of indentation for the title
-    " Why `=~#` instead of `is#`?{{{
-    "
-    " To make the code work even when we use 2 filetypes:
-    "
-    "     setf markdown.foobar
-    "}}}
-    if &ft =~# 'markdown'
+    if &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
         let level = fold#md#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
@@ -146,7 +140,7 @@ fu! fold#text() abort "{{{1
     "                                               └ for commented code
 
     " remove filetype specific noise
-    let title = &ft =~# 'markdown'
+    let title = &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
             \ ?     substitute(getline(v:foldstart), '^#\+\s*', '', '')
             \ : &ft is# 'sh'
             \ ?     substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
