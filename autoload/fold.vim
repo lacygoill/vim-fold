@@ -142,7 +142,7 @@ fu! fold#text() abort "{{{1
     " remove filetype specific noise
     let title = &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
             \ ?     substitute(getline(v:foldstart), '^#\+\s*', '', '')
-            \ : &ft is# 'sh'
+            \ : &ft is# 'sh' || &ft is# 'zsh'
             \ ?     substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
             \ : &ft is# 'vim'
             \ ?     substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
