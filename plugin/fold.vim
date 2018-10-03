@@ -21,5 +21,14 @@ noremap  <expr><silent><unique>  ]Z  fold#motion_rhs(']Z')
 noremap  <expr><silent><unique>  [z  fold#motion_rhs('[z')
 noremap  <expr><silent><unique>  ]z  fold#motion_rhs(']z')
 
+" Why don't you use an autocmd to automatically fold a logfile?{{{
+"
+" 1. a logfile could have no `.log` extension
+"
+" 2. a logfile can be very big
+"
+"    Folding a big file can be slow.
+"    We should not pay this price automatically, only when we decide.
+"}}}
 com! -bar FoldLogfile  call fold#logfile()
 
