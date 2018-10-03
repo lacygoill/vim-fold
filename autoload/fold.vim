@@ -2,7 +2,7 @@ fu! fold#text() abort "{{{1
     let line = getline(v:foldstart)
     " get the desired level of indentation for the title
     if &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
-        let level = fold#md#heading_depth(v:foldstart)
+        let level = fold#md#fde#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
         let indent = line =~# '{{'.'{\d\+\s*$'

@@ -32,14 +32,14 @@
 " endfu
 
 " Interface {{{1
-fu! fold#md#toggle_fde() abort "{{{2
-    let &l:fde = &l:fde is# 'fold#md#stacked()'
-             \ ?     'fold#md#nested()'
-             \ :     'fold#md#stacked()'
+fu! fold#md#fde#toggle() abort "{{{2
+    let &l:fde = &l:fde is# 'fold#md#fde#stacked()'
+             \ ?     'fold#md#fde#nested()'
+             \ :     'fold#md#fde#stacked()'
 endfu
 
 " Core {{{1
-fu! fold#md#heading_depth(lnum) abort "{{{2
+fu! fold#md#fde#heading_depth(lnum) abort "{{{2
     let level      = 0
     let thisline   = getline(a:lnum)
     let hash_count = len(matchstr(thisline, '^#\{1,6}'))
@@ -65,15 +65,15 @@ fu! fold#md#heading_depth(lnum) abort "{{{2
     return level
 endfu
 
-fu! fold#md#nested() abort "{{{2
-    let depth = fold#md#heading_depth(v:lnum)
+fu! fold#md#fde#nested() abort "{{{2
+    let depth = fold#md#fde#heading_depth(v:lnum)
     return depth > 0
        \ ?     '>'.depth
        \ :     '='
 endfu
 
-fu! fold#md#stacked() abort "{{{2
-    return fold#md#heading_depth(v:lnum) > 0
+fu! fold#md#fde#stacked() abort "{{{2
+    return fold#md#fde#heading_depth(v:lnum) > 0
        \ ?     '>1'
        \ :     '='
 endfu
