@@ -1,4 +1,4 @@
-fu! fold#text() abort "{{{1
+fu! fold#fdt#get() abort "{{{1
     let line = getline(v:foldstart)
     " get the desired level of indentation for the title
     if &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
