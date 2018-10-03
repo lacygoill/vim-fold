@@ -30,5 +30,5 @@ noremap  <expr><silent><unique>  ]z  fold#motion#rhs(']z')
 "    Folding a big file can be slow.
 "    We should not pay this price automatically, only when we decide.
 "}}}
-com! -bar FoldLogfile  call fold#logfile#main()
+nno  <silent><unique>  -l  :<c-u>call fold#logfile#main()<cr>
 
