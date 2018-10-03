@@ -30,6 +30,12 @@
 "     endif
 " endfu
 
+fu! fold#logfile() abort "{{{1
+    let b:title_like_in_markdown = 1
+    runtime! ftplugin/markdown.vim
+    e
+endfu
+
 fu! fold#motion_go(lhs, mode) abort "{{{1
     if a:mode is# 'n'
         norm! m'

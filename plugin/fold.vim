@@ -20,3 +20,6 @@ noremap  <expr><silent><unique>  [Z  fold#motion_rhs('[Z')
 noremap  <expr><silent><unique>  ]Z  fold#motion_rhs(']Z')
 noremap  <expr><silent><unique>  [z  fold#motion_rhs('[z')
 noremap  <expr><silent><unique>  ]z  fold#motion_rhs(']z')
+
+com! -bar FoldLogfile  call fold#logfile()
+
