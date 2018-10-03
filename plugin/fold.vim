@@ -16,10 +16,10 @@ let g:loaded_fold = 1
 " I don't like the asymmetry between the 2 pairs of mappings.
 " I prefer to use `[z`, `]z` and `[Z`, `]Z`.
 "}}}
-noremap  <expr><silent><unique>  [Z  fold#motion_rhs('[Z')
-noremap  <expr><silent><unique>  ]Z  fold#motion_rhs(']Z')
-noremap  <expr><silent><unique>  [z  fold#motion_rhs('[z')
-noremap  <expr><silent><unique>  ]z  fold#motion_rhs(']z')
+noremap  <expr><silent><unique>  [Z  fold#motion#rhs('[Z')
+noremap  <expr><silent><unique>  ]Z  fold#motion#rhs(']Z')
+noremap  <expr><silent><unique>  [z  fold#motion#rhs('[z')
+noremap  <expr><silent><unique>  ]z  fold#motion#rhs(']z')
 
 " Why don't you use an autocmd to automatically fold a logfile?{{{
 "
@@ -30,5 +30,5 @@ noremap  <expr><silent><unique>  ]z  fold#motion_rhs(']z')
 "    Folding a big file can be slow.
 "    We should not pay this price automatically, only when we decide.
 "}}}
-com! -bar FoldLogfile  call fold#logfile()
+com! -bar FoldLogfile  call fold#logfile#main()
 
