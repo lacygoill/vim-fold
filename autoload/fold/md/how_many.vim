@@ -11,7 +11,7 @@ fu! fold#md#how_many#print() abort "{{{2
     let msg_second_part = s:get_number_of_folds(2)
     call winrestview(view)
 
-    echom msg_first_part.', '.msg_second_part
+    echo msg_first_part.', '.msg_second_part
 endfu
 
 " Core {{{1
