@@ -3,21 +3,18 @@ fu! fold#md#how_many#print() abort "{{{2
     let view = winsaveview()
     let s:current_lvl = s:get_current_lvl()
 
-    let msg_first_part = s:get_msg_part(1)
-
+    call s:move_to_first_fold(1)
+    let msg_first_part = s:get_number_of_folds(1)
     call winrestview(view)
-    let msg_second_part = s:get_msg_part(2)
+
+    call s:move_to_first_fold(2)
+    let msg_second_part = s:get_number_of_folds(2)
     call winrestview(view)
 
     echom msg_first_part.', '.msg_second_part
 endfu
 
 " Core {{{1
-fu! s:get_msg_part(n) abort "{{{2
-    call s:move_to_first_fold(a:n)
-    return s:get_number_of_folds(a:n)
-endfu
-
 fu! s:move_to_first_fold(n) abort "{{{2
     if a:n == 1
         " move to first line of parent fold
