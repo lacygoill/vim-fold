@@ -32,3 +32,6 @@ noremap  <expr><silent><unique>  ]z  fold#motion#rhs(']z')
 "}}}
 nno  <silent><unique>  -l  :<c-u>call fold#logfile#main()<cr>
 
+xno  <silent>  [f  :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<cr>g@l
+xno  <silent>  ]f  :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<cr>g@l
+
