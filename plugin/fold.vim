@@ -21,6 +21,9 @@ noremap  <expr><silent><unique>  ]Z  fold#motion#rhs(']Z')
 noremap  <expr><silent><unique>  [z  fold#motion#rhs('[z')
 noremap  <expr><silent><unique>  ]z  fold#motion#rhs(']z')
 
+xno  <silent>  [f  :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<cr>g@l
+xno  <silent>  ]f  :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<cr>g@l
+
 " Why don't you use an autocmd to automatically fold a logfile?{{{
 "
 " 1. a logfile could have no `.log` extension
@@ -31,7 +34,4 @@ noremap  <expr><silent><unique>  ]z  fold#motion#rhs(']z')
 "    We should not pay this price automatically, only when we decide.
 "}}}
 nno  <silent><unique>  -l  :<c-u>call fold#logfile#main()<cr>
-
-xno  <silent>  [f  :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<cr>g@l
-xno  <silent>  ]f  :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<cr>g@l
 
