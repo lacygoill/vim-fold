@@ -17,28 +17,29 @@ endfu
 " Core {{{1
 fu! s:move_to_first_fold(n) abort "{{{2
     if a:n == 1
-        " move to first line of parent fold
-        let pat = s:current_lvl == 1
-            \ ? '^\%(#\+\n\|\%^\)\zs#\s\S\+'
-            \ : '^#\{'.(s:current_lvl-1).'}#\@!'
-    else
         " move to first line of first neighbour fold
         let pat = s:current_lvl == 1
             \ ? '^#\+$\n\zs\|\%^'
             \ : '^#\+$\n\zs\|^#\{'.(s:current_lvl - 1).'}#\@!\s\S\+.*\n\zs\|\%^'
+    else
+        " move to first line of parent fold
+        let pat = s:current_lvl == 1
+            \ ? '^\%(#\+\n\|\%^\)\zs#\s\S\+'
+            \ : '^#\{'.(s:current_lvl-1).'}#\@!'
     endif
     call search(pat, 'bcW')
 endfu
 
 fu! s:get_number_of_folds(n) abort "{{{2
     " a:n == 1
-    "     get the number of folds with the same level, and the same parent
+    "    get the number of  folds with the same level, and in  the same block of
+    "    consecutive folds
+    "
     " a:n == 2
-    "     get  the number of  folds with the  same level, and  in the same  block of
-    "     consecutive folds
+    "     get the number of folds with the same level, and the same parent
     let pat = s:current_lvl == 1
         \ ? '^#\+$\|\%$'
-        \ : (a:n == 2 ? '^#\+$\|' : '').'^#\{'.(s:current_lvl-1).'}#\@!\|\%$'
+        \ : (a:n == 1 ? '^#\+$\|' : '').'^#\{'.(s:current_lvl-1).'}#\@!\|\%$'
 
     let first_line_last_fold = search(pat, 'nW')
     let cnt = 0
@@ -47,7 +48,7 @@ fu! s:get_number_of_folds(n) abort "{{{2
         let cnt += 1
     endwhile
 
-    return (a:n == 1 ? cnt - 1 : cnt)
+    return (a:n == 1 ? cnt : cnt - 1)
 endfu
 
 " Utility {{{1
