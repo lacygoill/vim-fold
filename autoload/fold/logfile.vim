@@ -1,4 +1,7 @@
 fu! fold#logfile#main() abort "{{{1
+    if &ft isnot# ''
+        return
+    endif
     " How is it possible that the folds persist when we do `:FoldLogfile`, then reload the buffer?{{{
     "
     " A logfile has no filetype.
