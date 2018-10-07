@@ -24,6 +24,14 @@ noremap  <expr><silent><unique>  ]z  fold#motion#rhs(']z')
 xno  <silent>  [f  :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<cr>g@l
 xno  <silent>  ]f  :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<cr>g@l
 
+" Increase/decrease  'fdl', in  a  markdown  buffer  in “nesting” mode.{{{
+" Use it to quickly see the titles up to an arbitrary depth.
+" Useful  to get  an overview  of  the contents  of  the notes  of an  arbitrary
+" precision.
+"}}}
+nno  <silent>  [of  :<c-u>call fold#md#option#fdl('less')<cr>
+nno  <silent>  ]of  :<c-u>call fold#md#option#fdl('more')<cr>
+
 " Why don't you use an autocmd to automatically fold a logfile?{{{
 "
 " 1. a logfile could have no `.log` extension
