@@ -1,4 +1,10 @@
-fu! fold#md#promote#main(type) abort "{{{1
+fu! fold#md#promote#main(_) abort "{{{1
+    for i in range(1, v:count1)
+        call s:promote()
+    endfor
+endfu
+
+fu! s:promote() abort "{{{1
     let range = line("'<").','.line("'>")
     if s:choice is# 'more'
         sil exe 'keepj keepp '.range.'s/^\(#\+\)/\1#/e'
