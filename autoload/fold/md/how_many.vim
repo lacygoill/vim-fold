@@ -1,5 +1,12 @@
 " Interface {{{1
 fu! fold#md#how_many#print() abort "{{{2
+    if foldclosed('.') == -1
+        let first_line = search('^#', 'bcnW')
+        let last_line = search('^#', 'cnW')
+        echo last_line - first_line - 1
+        return
+    endif
+
     let view = winsaveview()
     let s:current_lvl = s:get_current_lvl()
 
