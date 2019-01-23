@@ -38,9 +38,9 @@ fu! fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
     " We begin populating the list `folds`.
     " Each item in this list is a dictionary with three keys:
     "
-    "     • foldstart:    first line in the fold
-    "     • foldend:      last line in the fold
-    "     • size:         size of the fold
+    "     - foldstart:    first line in the fold
+    "     - foldend:      last line in the fold
+    "     - size:         size of the fold
     "}}}
     let folds = [{'foldstart': a:lnum1, 'foldend': foldend, 'size': foldend - a:lnum1 + 1}]
     " What does the loop do?{{{
@@ -52,8 +52,8 @@ fu! fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
     "     3. every time it finds a previous fold which is bigger
     "        than the current one:
     "
-    "                • it moves the latter above
-    "                • it re-calls the function to continue the process
+    "                - it moves the latter above
+    "                - it re-calls the function to continue the process
     "}}}
     while foldend > 0
         for f in folds

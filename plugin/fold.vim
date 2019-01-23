@@ -7,10 +7,10 @@ let g:loaded_fold = 1
 "
 " By default the cursor is moved to the previous/next fold:
 "
-"     • no matter its level
+"     - no matter its level
 "       with `zj` and `zk`
 "
-"     • on the condition its level is greater than the current one
+"     - on the condition its level is greater than the current one
 "       with `[z` and `]z`
 "
 " I don't like the asymmetry between the 2 pairs of mappings.
