@@ -30,14 +30,14 @@
 "         return s:has_surrounding_fencemarks(a:lnum)
 "     endif
 " endfu
-
+" }}}1
 " Interface {{{1
 fu! fold#md#fde#toggle() abort "{{{2
     let &l:fde = &l:fde is# 'fold#md#fde#stacked()'
              \ ?     'fold#md#fde#nested()'
              \ :     'fold#md#fde#stacked()'
 endfu
-
+"}}}1
 " Core {{{1
 fu! fold#md#fde#heading_depth(lnum) abort "{{{2
     let level      = 0
