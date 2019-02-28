@@ -13,8 +13,9 @@ fu! fold#fdt#get() abort "{{{1
     let cml_left = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
     let cml_right = '\V'.matchstr(get(split(&l:cms, '%s', 1), 1, ''), '\S*').'\m'
 
-    " remove fold markers
+    " remove comment leader
     let pat = '^\s*'.cml_left.'\s\='
+    " remove fold markers
     if cml_right is# '\V\m'
         let pat .= '\|\s*\%('.cml_left.'\)\=\s*{'.'{{\d*\s*$'
     else
