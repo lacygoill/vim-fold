@@ -5,7 +5,7 @@ fu! fold#fdt#get() abort "{{{1
         let level = fold#md#fde#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
-        let indent = line =~# '{{'.'{\d\+\s*$'
+        let indent = line =~# '{'.'{{\d\+\s*$'
                  \ ?     repeat(' ', (v:foldlevel-1)*3)
                  \ :     matchstr(getline(v:foldstart), '^\s*')
     endif
@@ -16,7 +16,7 @@ fu! fold#fdt#get() abort "{{{1
     " remove fold markers
     let pat = '^\s*'.cml_left.'\s\='
     if cml_right is# '\V\m'
-        let pat .= '\|\s*\%('.cml_left.'\)\=\s*{{'.'{\d*\s*$'
+        let pat .= '\|\s*\%('.cml_left.'\)\=\s*{'.'{{\d*\s*$'
     else
         let pat .= '\|\s*'.cml_right.'\s*'.cml_left.'\s*{'.'{{\d*\s*'.cml_right.'\s*$'
     endif
