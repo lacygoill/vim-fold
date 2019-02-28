@@ -10,16 +10,18 @@ fu! fold#fdt#get() abort "{{{1
                  \ :     matchstr(getline(v:foldstart), '^\s*')
     endif
 
-    " get a possible comment leader
-    let cml = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\v'
-    "           │
-    "           └ the comment leader could contain special characters,
-    "             like % in a tex file
+    let cml_left = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
+    let cml_right = '\V'.matchstr(get(split(&l:cms, '%s', 1), 1, ''), '\S*').'\m'
 
-    " remove general noise
-    let title = substitute(line, '\v^\s*%('.cml.')\@?\s?|\s*%('.cml.')?\s*\{\{\{%(\d+)?\s*$', '', 'g')
-    "                                             └─┤
-    "                                               └ for commented code
+    " remove fold markers
+    let pat = '^\s*'.cml_left.'\s\='
+    if cml_right is# '\V\m'
+        let pat .= '\|\s*\%('.cml_left.'\)\=\s*{{'.'{\%(\d\+\)\=\s*$'
+    else
+        let pat .= '\|\s*'.cml_right.'\s*'.cml_left.'\s*{'.'{{\%(\d\+\)\=\s*'.cml_right.'\s*$'
+    endif
+
+    let title = substitute(line, pat, '', 'g')
 
     " remove filetype specific noise
     let title = &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
