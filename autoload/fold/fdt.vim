@@ -10,8 +10,8 @@ fu! fold#fdt#get() abort "{{{1
                  \ :     matchstr(getline(v:foldstart), '^\s*')
     endif
 
-    " If you don't care about html, you could probably simplify the code of this
-    " function, and get rid of `cml_right`.
+    " If you don't care about html and css, you could probably simplify the code
+    " of this function, and get rid of `cml_right`.
     let cml_left = '\V'.matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*').'\m'
     let cml_right = '\V'.matchstr(get(split(&l:cms, '%s', 1), 1, ''), '\S*').'\m'
 
