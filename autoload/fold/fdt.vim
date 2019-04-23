@@ -16,7 +16,15 @@ fu! fold#fdt#get() abort "{{{1
     let cml_right = '\V'.matchstr(get(split(&l:cms, '%s', 1), 1, ''), '\S*').'\m'
 
     " remove comment leader
-    let pat = '^\s*'.cml_left.'\s\='
+    " Why 2 spaces in the bracket expression?{{{
+    "
+    " The first is a space, the other is a no-break space.
+    " We sometimes use the latter when we want the title to be indented compared
+    " to the title of the previous fold (outside markdown).
+    " This  can be  useful to  prevent  the title  from being  highlighted as  a
+    " codeblock.
+    "}}}
+    let pat = '^\s*'.cml_left.'[  \t]\='
     " remove fold markers
     if cml_right is# '\V\m'
         let pat .= '\|\s*\%('.cml_left.'\)\=\s*{'.'{{\d*\s*$'
