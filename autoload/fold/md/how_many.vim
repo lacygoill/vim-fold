@@ -2,7 +2,7 @@
 fu! fold#md#how_many#print() abort "{{{2
     if foldclosed('.') == -1
         let first_line = search('^#', 'bcnW')
-        let last_line = search('^#', 'cnW')
+        let last_line = search('^#\|\%$', 'cnW')
         echo last_line - first_line - 1
         return
     endif
@@ -24,7 +24,7 @@ fu! fold#md#how_many#print() abort "{{{2
 
     echo msg_first_part.', '.msg_second_part
 endfu
-
+" }}}1
 " Core {{{1
 fu! s:move_to_first_fold(n) abort "{{{2
     if a:n == 1
@@ -53,7 +53,7 @@ fu! s:get_number_of_folds(n) abort "{{{2
 
     return (a:n == 1 ? cnt : cnt - 1)
 endfu
-
+"}}}1
 " Utility {{{1
 fu! s:get_current_lvl() abort "{{{2
     let pat = '^#\+\ze\s\+'
