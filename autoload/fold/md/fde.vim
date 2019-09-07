@@ -1,35 +1,35 @@
 " Old but can still be useful {{{1
-" fu! s:has_surrounding_fencemarks(lnum) abort {{{2
-"     let pos = [line('.'), col('.')]
-"     call cursor(a:lnum, 1)
+"     fu! s:has_surrounding_fencemarks(lnum) abort {{{2
+"         let pos = [line('.'), col('.')]
+"         call cursor(a:lnum, 1)
 "
-"     let start_fence    = '\%^```\|^\n\zs```'
-"     let end_fence      = '```\n^$'
-"     let fence_position = searchpairpos(start_fence, '', end_fence, 'W')
+"         let start_fence    = '\%^```\|^\n\zs```'
+"         let end_fence      = '```\n^$'
+"         let fence_position = searchpairpos(start_fence, '', end_fence, 'W')
 "
-"     call cursor(pos)
-"     return fence_position !=# [0,0]
-" endfu
+"         call cursor(pos)
+"         return fence_position !=# [0,0]
+"     endfu
 
-" fu! s:has_syntax_group(lnum) abort {{{2
-"     let syntax_groups = map(synstack(a:lnum, 1), {_,v -> synIDattr(v, 'name')})
-"     for value in syntax_groups
-"         if value =~ '\vmarkdown%(Code|Highlight)'
-"             return 1
+"     fu! s:has_syntax_group(lnum) abort {{{2
+"         let syntax_groups = map(synstack(a:lnum, 1), {_,v -> synIDattr(v, 'name')})
+"         for value in syntax_groups
+"             if value =~ '\vmarkdown%(Code|Highlight)'
+"                 return 1
+"             endif
+"         endfor
+"     endfu
+
+"     fu! s:line_is_fenced(lnum) abort {{{2
+"         if get(b:, 'current_syntax', '') is# 'markdown'
+"             " It's cheap to check if the current line has 'markdownCode' syntax group
+"             return s:has_syntax_group(a:lnum)
+"         else
+"             " Using searchpairpos() is expensive, so only do it if syntax highlighting
+"             " is not enabled
+"             return s:has_surrounding_fencemarks(a:lnum)
 "         endif
-"     endfor
-" endfu
-
-" fu! s:line_is_fenced(lnum) abort {{{2
-"     if get(b:, 'current_syntax', '') is# 'markdown'
-"         " It's cheap to check if the current line has 'markdownCode' syntax group
-"         return s:has_syntax_group(a:lnum)
-"     else
-"         " Using searchpairpos() is expensive, so only do it if syntax highlighting
-"         " is not enabled
-"         return s:has_surrounding_fencemarks(a:lnum)
-"     endif
-" endfu
+"     endfu
 " }}}1
 " Interface {{{1
 fu! fold#md#fde#toggle() abort "{{{2
