@@ -47,7 +47,7 @@ fu! fold#md#fde#heading_depth(lnum) abort "{{{2
     if hash_count > 0
         let level = hash_count
     else
-        if thisline isnot# ''
+        if thisline isnot# '' && thisline isnot# '```'
             let nextline = getline(a:lnum + 1)
             if nextline =~ '^=\+\s*$'
                 let level = 1
