@@ -27,9 +27,9 @@ fu! fold#fdt#get() abort "{{{1
     let pat = '^\s*'.cml_left.'[  \t]\='
     " remove fold markers
     if cml_right is# '\V\m'
-        let pat .= '\|\s*\%('.cml_left.'\)\=\s*{'.'{{\d*\s*$'
+        let pat ..= '\|\s*\%('.cml_left.'\)\=\s*{'.'{{\d*\s*$'
     else
-        let pat .= '\|\s*'.cml_right.'\s*'.cml_left.'\s*{'.'{{\d*\s*'.cml_right.'\s*$'
+        let pat ..= '\|\s*'.cml_right.'\s*'.cml_left.'\s*{'.'{{\d*\s*'.cml_right.'\s*$'
     endif
 
     let title = substitute(line, pat, '', 'g')
