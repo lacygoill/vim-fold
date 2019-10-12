@@ -1,4 +1,4 @@
-fu! fold#md#option#fdl(choice) abort
+fu fold#md#option#fdl(choice) abort
     if &l:fde !~# 'nested'
         echo "the folds are not nested; change 'fde' first"
         return

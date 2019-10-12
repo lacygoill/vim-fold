@@ -1,4 +1,4 @@
-fu! fold#logfile#main() abort "{{{1
+fu fold#logfile#main() abort "{{{1
     if &ft isnot# ''
         return
     endif

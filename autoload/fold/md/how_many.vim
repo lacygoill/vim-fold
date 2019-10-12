@@ -1,5 +1,5 @@
 " Interface {{{1
-fu! fold#md#how_many#print() abort "{{{2
+fu fold#md#how_many#print() abort "{{{2
     if foldclosed('.') == -1
         let first_line = search('^#', 'bcnW')
         let last_line = search('^#\|\%$', 'cnW')
@@ -26,7 +26,7 @@ fu! fold#md#how_many#print() abort "{{{2
 endfu
 " }}}1
 " Core {{{1
-fu! s:move_to_first_fold(n) abort "{{{2
+fu s:move_to_first_fold(n) abort "{{{2
     if a:n == 1
         let pat = s:current_lvl == 1
             \ ? '^#\+$\n\zs\|\%^'
@@ -39,7 +39,7 @@ fu! s:move_to_first_fold(n) abort "{{{2
     call search(pat, 'bcW')
 endfu
 
-fu! s:get_number_of_folds(n) abort "{{{2
+fu s:get_number_of_folds(n) abort "{{{2
     let pat = s:current_lvl == 1
         \ ? '^#\+$\|\%$'
         \ : (a:n == 1 ? '^#\+$\|' : '').'^#\{'.(s:current_lvl-1).'}#\@!\|\%$'
@@ -55,7 +55,7 @@ fu! s:get_number_of_folds(n) abort "{{{2
 endfu
 "}}}1
 " Utility {{{1
-fu! s:get_current_lvl() abort "{{{2
+fu s:get_current_lvl() abort "{{{2
     let pat = '^#\+\ze\s\+'
     let first_line = search(pat, 'bcnW')
     let current_lvl = len(matchstr(getline(first_line), pat))

@@ -1,4 +1,4 @@
-fu! fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
+fu fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
     " get the level of the first fold
     let lvl = strlen(matchstr(getline(a:lnum1), '^#*'))
     if lvl == 0

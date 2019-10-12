@@ -1,4 +1,4 @@
-fu! fold#motion#go(lhs, mode) abort "{{{1
+fu fold#motion#go(lhs, mode) abort "{{{1
     if a:mode is# 'n'
         norm! m'
     elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
@@ -60,7 +60,7 @@ fu! fold#motion#go(lhs, mode) abort "{{{1
     endif
 endfu
 
-fu! fold#motion#rhs(lhs) abort "{{{1
+fu fold#motion#rhs(lhs) abort "{{{1
     let mode = mode(1)
 
     " If we're in visual block mode, we can't pass `C-v` directly.

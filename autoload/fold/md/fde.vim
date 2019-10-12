@@ -1,5 +1,5 @@
 " Old but can still be useful {{{1
-"     fu! s:has_surrounding_fencemarks(lnum) abort {{{2
+"     fu s:has_surrounding_fencemarks(lnum) abort {{{2
 "         let pos = [line('.'), col('.')]
 "         call cursor(a:lnum, 1)
 "
@@ -11,7 +11,7 @@
 "         return fence_position !=# [0,0]
 "     endfu
 
-"     fu! s:has_syntax_group(lnum) abort {{{2
+"     fu s:has_syntax_group(lnum) abort {{{2
 "         let syntax_groups = map(synstack(a:lnum, 1), {_,v -> synIDattr(v, 'name')})
 "         for value in syntax_groups
 "             if value =~ '\vmarkdown%(Code|Highlight)'
@@ -20,7 +20,7 @@
 "         endfor
 "     endfu
 
-"     fu! s:line_is_fenced(lnum) abort {{{2
+"     fu s:line_is_fenced(lnum) abort {{{2
 "         if get(b:, 'current_syntax', '') is# 'markdown'
 "             " It's cheap to check if the current line has 'markdownCode' syntax group
 "             return s:has_syntax_group(a:lnum)
@@ -32,14 +32,14 @@
 "     endfu
 " }}}1
 " Interface {{{1
-fu! fold#md#fde#toggle() abort "{{{2
+fu fold#md#fde#toggle() abort "{{{2
     let &l:fde = &l:fde is# 'fold#md#fde#stacked()'
              \ ?     'fold#md#fde#nested()'
              \ :     'fold#md#fde#stacked()'
 endfu
 "}}}1
 " Core {{{1
-fu! fold#md#fde#heading_depth(lnum) abort "{{{2
+fu fold#md#fde#heading_depth(lnum) abort "{{{2
     let level      = 0
     let thisline   = getline(a:lnum)
     let hash_count = len(matchstr(thisline, '^#\{1,6}'))
@@ -65,14 +65,14 @@ fu! fold#md#fde#heading_depth(lnum) abort "{{{2
     return level
 endfu
 
-fu! fold#md#fde#nested() abort "{{{2
+fu fold#md#fde#nested() abort "{{{2
     let depth = fold#md#fde#heading_depth(v:lnum)
     return depth > 0
        \ ?     '>'.depth
        \ :     '='
 endfu
 
-fu! fold#md#fde#stacked() abort "{{{2
+fu fold#md#fde#stacked() abort "{{{2
     return fold#md#fde#heading_depth(v:lnum) > 0
        \ ?     '>1'
        \ :     '='
