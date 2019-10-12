@@ -38,9 +38,9 @@ fu fold#fdt#get() abort "{{{1
     let title = &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
             \ ?     substitute(getline(v:foldstart), '^[-=#]\+\s*', '', '')
             \ : &ft is# 'sh' || &ft is# 'zsh'
-            \ ?     substitute(title, '\v^.*\zs\(\)\s*%(\{|\()', '', '')
+            \ ?     substitute(title, '^.*\zs()\s*\%({\|(\)', '', '')
             \ : &ft is# 'vim'
-            \ ?     substitute(title, '\v^\s*fu%[nction]! %(.*%(#|s:))?(.{-})\(.*\).*', '\1', '')
+            \ ?     substitute(title, '^\s*fu\%[nction]!\= \%(.*\%(#\|s:\)\)\=\(.\{-}\)(.*).*', '\1', '')
             \ : &ft is# 'python'
             \ ?     substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
             \ :     title
