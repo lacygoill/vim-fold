@@ -43,3 +43,7 @@ nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
 "}}}
 nno <silent><unique> -l :<c-u>call fold#logfile#main()<cr>
 
+" Purpose: automatically add an empty line at the end of a multi-line comment so
+" that the end marker of the fold is on a dedicated line.
+nno <silent><unique> zfic :<c-u>call fold#comment#main()<cr>
+
