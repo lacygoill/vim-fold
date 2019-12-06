@@ -56,12 +56,11 @@ fu fold#md#fde#heading_depth(lnum) abort "{{{2
             endif
         endif
     endif
-    " temporarily commented because it makes us gain 0.5 seconds when loading
-    " Vim notes
-    "         if level > 0 && s:line_is_fenced(a:lnum)
-    "             " Ignore # or === if they appear within fenced code blocks
-    "             return 0
-    "         endif
+    " temporarily commented because it makes us gain 0.5 seconds when loading Vim notes
+    "     if level > 0 && s:line_is_fenced(a:lnum)
+    "         " Ignore # or === if they appear within fenced code blocks
+    "         return 0
+    "     endif
     return level
 endfu
 
