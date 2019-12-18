@@ -1,5 +1,5 @@
 fu fold#logfile#main() abort "{{{1
-    if &ft isnot# ''
+    if ! (&ft is# '' || &ft is# 'markdown' && search('^health#', 'n'))
         return
     endif
     " How is it possible that the folds persist when we do `:FoldLogfile`, then reload the buffer?{{{
