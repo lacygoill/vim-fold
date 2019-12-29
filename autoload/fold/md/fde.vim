@@ -14,7 +14,7 @@
 "     fu s:has_syntax_group(lnum) abort {{{2
 "         let syntax_groups = map(synstack(a:lnum, 1), {_,v -> synIDattr(v, 'name')})
 "         for value in syntax_groups
-"             if value =~ '\vmarkdown%(Code|Highlight)'
+"             if value =~ 'markdown\%(Code\|Highlight\)'
 "                 return 1
 "             endif
 "         endfor
