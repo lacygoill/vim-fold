@@ -12,8 +12,8 @@ fu fold#fdt#get() abort "{{{1
 
     " If you don't care about html and css, you could probably simplify the code
     " of this function, and get rid of `cml_right`.
-    let cml_left = '\V'..matchstr(get(split(&l:cms, '%s'), 0, ''), '\S*')..'\m'
-    let cml_right = '\V'..matchstr(get(split(&l:cms, '%s', 1), 1, ''), '\S*')..'\m'
+    let cml_left = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
+    let cml_right = '\V'..escape(matchstr(&l:cms, '.*%s\s*\zs.*'), '\')..'\m'
 
     " remove comment leader
     " Why 2 spaces in the bracket expression?{{{
