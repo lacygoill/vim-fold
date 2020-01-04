@@ -1,11 +1,11 @@
 fu fold#comment#main() abort
-    norm Vic
+    sil exe "norm! V:\<c-u>call comment#object(0)\r"
     exe "norm! \e"
     let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'
     if getline("'>") !~# '^\s*'..cml..'\s*$'
         exe "norm! o\e"
     endif
-    norm Vic
+    sil exe "norm! V:\<c-u>call comment#object(0)\r"
     norm! zf
 endfu
 

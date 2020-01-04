@@ -26,19 +26,19 @@ fu fold#motion#go(lhs, mode) abort "{{{1
         if a:lhs is# '[z' && line =~# '^#\{2,}'
             let level = len(matchstr(line, '^#\+'))
             " search for beginning of containing fold
-            return search('^#\{'.(level-1).'}#\@!', 'bW')
+            return search('^#\{'..(level-1)..'}#\@!', 'bW')
 
         elseif a:lhs is# ']z'
             let next_line = getline(line('.')+1)
             if next_line =~# '^#\{2,}'
                 let level = len(matchstr(next_line, '^#\+'))
                 " search for ending of containing fold
-                return search('\ze\n#\{'.(level-1).'}#\@!\|.*\%$', 'W')
-                "              ├───┘                     ├────┘
-                "              │                         └ OR, look for the last line.
-                "              │                           Why? The containing fold may be the last fold.
-                "              │                           In this case, there will be no next fold,
-                "              │                           and the previous pattern will fail.
+                return search('\ze\n#\{'..(level-1)..'}#\@!\|.*\%$', 'W')
+                "              ├───┘                       ├────┘
+                "              │                           └ OR, look for the last line.
+                "              │                             Why? The containing fold may be the last fold.
+                "              │                             In this case, there will be no next fold,
+                "              │                             and the previous pattern will fail.
                 "              │
                 "              └ ending of containing fold =
                 "                just before the first line of the next fold
@@ -53,7 +53,7 @@ fu fold#motion#go(lhs, mode) abort "{{{1
            \ ?     'zj'
            \ :     a:lhs
 
-    exe 'norm! '.v:count1.keys
+    exe 'norm! '..v:count1..keys
 
     if a:mode isnot# 'no'
         norm! zv
