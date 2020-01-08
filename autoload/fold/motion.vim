@@ -1,7 +1,7 @@
 fu fold#motion#go(lhs, mode) abort "{{{1
     if a:mode is# 'n'
         norm! m'
-    elseif index(['v', 'V', "\<c-v>"], a:mode) >= 0
+    elseif a:mode =~# "[vV\<c-v>]"
         " If we  were initially  in visual mode,  we've left it  as soon  as the
         " mapping pressed Enter  to execute the call to this  function.  We need
         " to get back in visual mode, before the search.
