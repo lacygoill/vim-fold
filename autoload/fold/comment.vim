@@ -1,4 +1,4 @@
-fu fold#comment#main() abort
+fu fold#comment#main(_) abort
     sil exe "norm! V:\<c-u>call comment#object(0)\r"
     exe "norm! \e"
     let cml = '\V'..escape(matchstr(&l:cms, '\S*\ze\s*%s'), '\')..'\m'

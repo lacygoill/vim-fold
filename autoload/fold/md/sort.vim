@@ -1,6 +1,6 @@
 fu fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
     " get the level of the first fold
-    let lvl = strlen(matchstr(getline(a:lnum1), '^#*'))
+    let lvl = len(matchstr(getline(a:lnum1), '^#*'))
     if lvl == 0
         return 'echoerr "the first line is not a fold title"'
     endif
@@ -25,7 +25,7 @@ fu fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
         " Thus, the quantifier *must* go below `lvl`.
         "
         "}}}
-        let pat = '\n\%(#\{1,'.lvl.'}#\@!\)\|\%$'
+        let pat = '\n\%(#\{1,'..lvl..'}#\@!\)\|\%$'
 
         call cursor(a:lnum1, 1)
 
@@ -71,7 +71,7 @@ fu fold#md#sort#by_size(lnum1,lnum2) abort "{{{1
             let foldend = search(pat, 'W', a:lnum2)
             "                  ┌ stop if you've found a fold whose level is < `lvl`
             "                  │
-            if foldend == 0 || match(getline(orig_lnum+1), '^\%(#\{'.(lvl-1).'}#\@!\)') == 0
+            if foldend == 0 || match(getline(orig_lnum+1), '^\%(#\{'..(lvl-1)..'}#\@!\)') == 0
                 break
             endif
             let folds += [{'foldstart': orig_lnum + 1, 'foldend': foldend, 'size': foldend - orig_lnum}]
