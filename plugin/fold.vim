@@ -172,6 +172,15 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 
 " TODO: finish understanding/refactoring/reviewing/documenting the "Core" and "Interface" sections
 
+" FIXME:
+"                                        number used in `s:is_small()`
+"                                        vv
+"     $ vim +"%d|pu=['# x']+repeat([''], 30)+['# x']" /tmp/md.md
+"     " press `[ SPC` while your cursor is on the second closed fold, in order to add an empty fold above
+"     " an empty fold is added (✔),
+"     " but it's not closed (✘),
+"     " and you can't close it with `zM` (✘), at least until you save the buffer by executing `:w` or pressing `C-s`
+
 " Core {{{1
 fu s:on_winleave() abort "{{{2
     for var in ['last_fdm', 'prediff_fdm']
