@@ -290,7 +290,8 @@ endfu
 " Utilities {{{1
 fu s:windo(cmd) abort "{{{2
     if !empty(getcmdwintype()) | return | endif
-    call map(range(1, winnr('$')), {_,v -> lg#win_execute(win_getid(v), a:cmd)})
+        call map(range(1, winnr('$')), {_,v -> lg#win_execute(win_getid(v), a:cmd)})
+    " call map(range(1, winnr('$')), {_,v -> win_execute(win_getid(v), a:cmd)})
 endfu
 
 fu s:should_skip() abort "{{{2
