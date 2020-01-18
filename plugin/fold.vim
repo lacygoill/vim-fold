@@ -62,6 +62,12 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 "     " an empty fold is added (✔),
 "     " but it's not closed (✘),
 "     " and you can't close it with `zM` (✘), at least until you save the buffer by executing `:w` or pressing `C-s`
+"
+" Update: You can still reproduce after commenting out all the autocmds.
+" It comes from `:LazyFoldUpdate` which is called from our markdown filetype plugin.
+" The  latter calls  (indirectly) `s:update_win()`  which calls  a timer,  which
+" resets 'fdm' to manual; if you increase the waiting time, the issue disappears;
+" but only for the first newly-created empty fold; not for the subsequent ones.
 
 " TODO: finish understanding/refactoring/reviewing/documenting the "Core" and "Interface" sections
 " Also, review all the todos in the entire fold plugin related to lazyfold.
