@@ -368,6 +368,11 @@ fu s:install_mappings() abort
         " Try to call `fold#fast#update_win()` from `fold#motion#rhs()`.
         " If you don't, and you prefer to use these mappings, you'll need to add
         " `return ''` at the end of `s:update_win()`.
+        "
+        " You'll probably need to make `s:update_win()` a public function.
+        " If you don't want to (or can't), maybe you could use `:LazyFoldUpdate`
+        " (if necessary, allow it to accept  an optional argument to tell it which
+        " function it should invoke...).
         "}}}
         "     exe 'nno <expr><silent> '..cmd..' <sid>update_win()..v:count..'..string(cmd)
         "     exe 'xno <expr><silent> '..cmd..' <sid>update_win().."gv"..v:count..'..string(cmd)
