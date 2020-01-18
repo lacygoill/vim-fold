@@ -90,12 +90,12 @@ fu fold#md#fde#stacked() abort "{{{2
     "         endif
     "         return level
     "     endfu
-    "     ino <expr> <c-k> repeat('<del>', 300)
+    "     ino <expr> <c-k><c-k> repeat('<del>', 300)
     "     EOF
     "     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
     "
     " Vim starts up after about 3 seconds.
-    " Next, press `I C-k`; Vim removes 300 characters after about 3 seconds.
+    " Next, press `I C-k C-k`; Vim removes 300 characters after about 3 seconds.
     "
     " Now, replace  `'='` with `1` and  re-run the same command:  this time, Vim
     " starts up immediately; similarly, it removes 300 characters immediately.

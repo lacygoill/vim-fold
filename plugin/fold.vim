@@ -50,8 +50,26 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 
 
 
-
 " TODO: finish understanding/refactoring/reviewing/documenting the "Core" and "Interface" sections
+
+" TODO: Document how to test the syntax foldmethod.
+"
+"     $ git clone https://github.com/BurntSushi/ripgrep && cd *(/oc[1])
+"     $ vim --cmd 'let g:rust_fold=1' build.rs
+
+" TODO: We've removed `s:update_tab()` and the `VimEnter` autocmd which called it.
+" It didn't seem to be useful.  Why did FastFold used them?
+
+" TODO: When Vim  is invoked to  read its stdin (in  a shell pipeline),  set the
+" path so that it includes the shell cwd.
+" Also, tweak `'inex'` so that it removes a possible leading `./`.
+"
+" Rationale:
+" When we do sth like:
+"
+"     $ find -iname '*.rs' | vipe
+"
+" It would be nice to be able to press `ZF` on a path to open it in a split window.
 
 " Purpose:{{{
 "
@@ -73,7 +91,7 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 "         endif
 "         return level
 "     endfu
-"     ino <expr> <c-k> repeat('<del>', 300)
+"     ino <expr> <c-k><c-k> repeat('<del>', 300)
 "     EOF
 "     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
 "
@@ -144,7 +162,7 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 
 " Init {{{1
 
-" Originally, `vim-fastfold` used 200, but it seemed too much.{{{
+" Originally, `FastFold` used 200, but it seems too much.{{{
 "
 " Whatever value you use, make this experiment:
 "
@@ -152,7 +170,7 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 "                                       vvv  vvv
 "     $ vim +"%d | put='text' | norm! yy123pG123Ax" /tmp/md.md
 "     " make sure that 'fdm' is 'expr'
-"     " press:  I C-k
+"     " press:  I C-k C-k
 "
 " Check how much time it takes for Vim to remove all the characters.
 " Choose a value for which the time is acceptable.
@@ -172,6 +190,11 @@ const s:MIN_LINES = 30
 "
 " Update: I think  one of the difference  is that `zx` only  affects the current
 " window, while `FoldLazyCompute` affects all windows in the current tab page.
+"
+" ---
+"
+" Also, consider getting rid of it.
+" Just convert `s:update_buf()` into a public function.
 "}}}
 com -bar -bang FoldLazyCompute call s:update_buf(<bang>0)
 
@@ -201,7 +224,6 @@ call s:install_mappings()
 
 augroup LazyFold
     au!
-    au VimEnter * call s:update_tab()
     " Make foldmethod local to buffer instead of window
     au WinEnter * if exists('b:last_fdm') | let w:last_fdm = b:last_fdm | endif
     au WinLeave * call s:on_winleave()
@@ -233,11 +255,6 @@ fu s:on_bufenter() abort "{{{2
     if b:changedtick != b:lazyfold_lastchangedtick && &l:fdm isnot# 'diff' && exists('b:prediff_fdm')
         call s:update_buf(0)
     endif
-endfu
-
-fu s:update_tab() abort "{{{2
-    if exists('g:SessionLoad') | return | endif
-    call s:windo('call s:update_win()')
 endfu
 
 fu s:update_win() abort "{{{2
@@ -391,7 +408,7 @@ fu s:should_skip() abort "{{{2
 endfu
 
 fu s:is_reasonable() abort "{{{2
-    return &l:fdm is# 'syntax' || &l:fdm is# 'expr'
+    return &l:fdm =~# '^\%(expr\|indent\|syntax\)$'
 endfu
 
 fu s:is_small() abort "{{{2
