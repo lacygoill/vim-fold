@@ -51,34 +51,7 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 
 
 
-" finish
-
-" FIXME: sometimes, after adding an empty fold, it's not closed automatically
-"
-"                                        number used in `s:is_small()`
-"                                        vv
-"     $ vim +"%d|pu=['# x']+repeat([''], 30)+['# x']" /tmp/md.md
-"     " press `[ SPC` while your cursor is on the second closed fold, in order to add an empty fold above
-"     " an empty fold is added (✔),
-"     " but it's not closed (✘),
-"     " and you can't close it with `zM` (✘), at least until you save the buffer by executing `:w` or pressing `C-s`
-"
-" Update: You can still reproduce after commenting out all the autocmds.
-"
-" It comes from `:LazyFoldUpdate` which is called from our markdown filetype plugin.
-" The  latter calls  (indirectly) `s:update_win()`  which calls  a timer,  which
-" resets 'fdm' to manual; if you increase the waiting time, the issue disappears;
-" but only for the first newly-created empty fold; not for the subsequent ones.
-"
-" ---
-"
-" You  can reproduce without  `LazyFoldUpdate` in the markdown  filetype plugin;
-" replace it with:
-"
-"     call timer_start(0, {-> execute('setl fdm=manual')})
-
 " TODO: finish understanding/refactoring/reviewing/documenting the "Core" and "Interface" sections
-" Also, review all the todos in the entire fold plugin related to lazyfold.
 
 " Purpose:{{{
 "
@@ -169,6 +142,79 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 " `C-k` should also be instantaneous.
 "}}}
 
+" Init {{{1
+
+" Originally, `vim-fastfold` used 200, but it seemed too much.{{{
+"
+" Whatever value you use, make this experiment:
+"
+"                                       replace with the new number you want to use (minus 3)
+"                                       vvv  vvv
+"     $ vim +"%d | put='text' | norm! yy123pG123Ax" /tmp/md.md
+"     " make sure that 'fdm' is 'expr'
+"     " press:  I C-k
+"
+" Check how much time it takes for Vim to remove all the characters.
+" Choose a value for which the time is acceptable.
+" 30 seems like a  good fit, because it's a round number, and  it's close to the
+" current maximum number of lines I can display in a window (`&lines`).
+"
+" `s:MIN_LINES` is  used to  determine whether  a file is  small, in  which case
+" `'fdm'` is not reset to `manual`.
+" It makes sense to consider a file which  fits on a single screen as small; but
+" not anything above.
+"}}}
+const s:MIN_LINES = 30
+
+" Interface {{{1
+
+" TODO: What does this command do? How is it useful compared to `zx`?{{{
+"
+" Update: I think  one of the difference  is that `zx` only  affects the current
+" window, while `FoldLazyCompute` affects all windows in the current tab page.
+"}}}
+com -bar -bang FoldLazyCompute call s:update_buf(<bang>0)
+
+fu s:install_mappings() abort
+    nno <silent><unique> zuz :<c-u>FoldLazyCompute!<cr>
+    for suffix in ['x', 'X', 'a', 'A', 'o', 'O', 'c', 'C']
+        exe 'nno <silent> z'..suffix..' :<c-u>call <SID>update_win()<cr>z'..suffix
+    endfor
+    for cmd in ['[z', ']z', '[Z', ']Z']
+        " TODO: Integrate this in our current `[z` &friends mappings.{{{
+        "
+        " Try to call `fold#fast#update_win()` from `fold#motion#rhs()`.
+        " If you don't, and you prefer to use these mappings, you'll need to add
+        " `return ''` at the end of `s:update_win()`.
+        "
+        " You'll probably need to make `s:update_win()` a public function.
+        " If you don't want to (or can't), maybe you could use `:FoldLazyCompute`
+        " (if necessary, allow it to accept  an optional argument to tell it which
+        " function it should invoke...).
+        "}}}
+        "     exe 'nno <expr><silent> '..cmd..' <sid>update_win()..v:count..'..string(cmd)
+        "     exe 'xno <expr><silent> '..cmd..' <sid>update_win().."gv"..v:count..'..string(cmd)
+        "     exe 'ono <expr><silent> '..cmd..' "<esc>"..<sid>update_win()..''"''..v:register..v:operator..v:count1..'..string(cmd)
+    endfor
+endfu
+call s:install_mappings()
+
+augroup LazyFold
+    au!
+    au VimEnter * call s:update_tab()
+    " Make foldmethod local to buffer instead of window
+    au WinEnter * if exists('b:last_fdm') | let w:last_fdm = b:last_fdm | endif
+    au WinLeave * call s:on_winleave()
+    " Update folds after:
+    " foldmethod set by saving, filetype autocmd, `:loadview` or `:source Session.vim`
+    au BufWritePost,FileType,SessionLoadPost * call s:update_buf(0)
+    " foldmethod set by modeline
+    au BufWinEnter * if !exists('b:lazyfold') | call s:update_buf(0) | let b:lazyfold = 1 | endif
+    " entering a changed buffer
+    au BufEnter * call s:on_bufenter()
+    au BufLeave * let b:lazyfold_lastchangedtick = b:changedtick
+augroup END
+"}}}1
 " Core {{{1
 fu s:on_winleave() abort "{{{2
     for var in ['last_fdm', 'prediff_fdm']
@@ -349,65 +395,6 @@ fu s:is_reasonable() abort "{{{2
 endfu
 
 fu s:is_small() abort "{{{2
-    " TODO: Make experiments to find the right value.
-    "
-    "     $ vim +"%d | put='text' | norm! yy123pG123Ax" /tmp/md.md
-    "
-    " Check how much time  Vim takes to start up, and how much  time it takes to
-    " remove the characters when we press `I C-k`.
-    "
-    " ---
-    "
-    " Originally, it was 200; but that was way too big.
-    return line('$') <= 30
+    return line('$') <= s:MIN_LINES
 endfu
-"}}}1
-" Interface {{{1
-
-" TODO: What does this command do? How is it useful compared to `zx`?{{{
-"
-" Update: I think  one of the difference  is that `zx` only  affects the current
-" window, while `LazyFoldUpdate` affects all windows in the current tab page.
-"}}}
-com -bar -bang LazyFoldUpdate call s:update_buf(<bang>0)
-
-fu s:install_mappings() abort
-    nno <silent><unique> zuz :<c-u>LazyFoldUpdate!<cr>
-    for suffix in ['x', 'X', 'a', 'A', 'o', 'O', 'c', 'C']
-        exe 'nno <silent> z'..suffix..' :<c-u>call <SID>update_win()<cr>z'..suffix
-    endfor
-    for cmd in ['[z', ']z', '[Z', ']Z']
-        " TODO: Integrate this in our current `[z` &friends mappings.{{{
-        "
-        " Try to call `fold#fast#update_win()` from `fold#motion#rhs()`.
-        " If you don't, and you prefer to use these mappings, you'll need to add
-        " `return ''` at the end of `s:update_win()`.
-        "
-        " You'll probably need to make `s:update_win()` a public function.
-        " If you don't want to (or can't), maybe you could use `:LazyFoldUpdate`
-        " (if necessary, allow it to accept  an optional argument to tell it which
-        " function it should invoke...).
-        "}}}
-        "     exe 'nno <expr><silent> '..cmd..' <sid>update_win()..v:count..'..string(cmd)
-        "     exe 'xno <expr><silent> '..cmd..' <sid>update_win().."gv"..v:count..'..string(cmd)
-        "     exe 'ono <expr><silent> '..cmd..' "<esc>"..<sid>update_win()..''"''..v:register..v:operator..v:count1..'..string(cmd)
-    endfor
-endfu
-call s:install_mappings()
-
-augroup LazyFold
-    au!
-    au VimEnter * call s:update_tab()
-    " Make foldmethod local to buffer instead of window
-    au WinEnter * if exists('b:last_fdm') | let w:last_fdm = b:last_fdm | endif
-    au WinLeave * call s:on_winleave()
-    " Update folds after:
-    " foldmethod set by saving, filetype autocmd, `:loadview` or `:source Session.vim`
-    au BufWritePost,FileType,SessionLoadPost * call s:update_buf(0)
-    " foldmethod set by modeline
-    au BufWinEnter * if !exists('b:lazyfold') | call s:update_buf(0) | let b:lazyfold = 1 | endif
-    " entering a changed buffer
-    au BufEnter * call s:on_bufenter()
-    au BufLeave * let b:lazyfold_lastchangedtick = b:changedtick
-augroup END
 "}}}1

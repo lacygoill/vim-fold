@@ -35,8 +35,13 @@ fu fold#md#fde#toggle() abort "{{{2
     let &l:fde = &l:fde is# 'fold#md#fde#stacked()'
              \ ?     'fold#md#fde#nested()'
              \ :     'fold#md#fde#stacked()'
-    " TODO: Document why this is necessary.
-    sil! LazyFoldUpdate
+    " Why?{{{
+    "
+    " We set `'fdm'` to `manual` by default, because `expr` can be much more expensive.
+    " As a consequence, if we change  the value of `'fde'`, Vim won't re-compute
+    " the folds; we want it to; that's why we need to execute `:FoldLazyCompute`.
+    "}}}
+    FoldLazyCompute
 endfu
 "}}}1
 " Core {{{1
