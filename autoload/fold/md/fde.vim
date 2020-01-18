@@ -36,7 +36,7 @@ fu fold#md#fde#toggle() abort "{{{2
              \ ?     'fold#md#fde#nested()'
              \ :     'fold#md#fde#stacked()'
     " TODO: Document why this is necessary.
-    sil! FastFoldUpdate
+    sil! LazyFoldUpdate
 endfu
 "}}}1
 " Core {{{1
