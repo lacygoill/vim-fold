@@ -41,14 +41,14 @@ nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
 "    Folding a big file can be slow.
 "    We should not pay this price systematically, only when we decide.
 "}}}
-nno <silent><unique> -l :<c-u>call fold#logfile#main()<cr>
+nno <silent><unique> -l :<c-u>call fold#adhoc#main()<cr>
 
 " Purpose: automatically add an empty line at the end of a multi-line comment so
 " that the end marker of the fold is on a dedicated line.
 nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 
 
-
+" finish
 
 " TODO: finish understanding/refactoring/reviewing/documenting the "Core" and "Interface" sections
 
@@ -59,6 +59,12 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 
 " TODO: We've removed `s:update_tab()` and the `VimEnter` autocmd which called it.
 " It didn't seem to be useful.  Why did FastFold used them?
+"
+"     au VimEnter * call s:update_tab()
+"     fu s:update_tab() abort
+"         if exists('g:SessionLoad') | return | endif
+"         call s:windo('call s:update_win()')
+"     endfu
 
 " TODO: When Vim  is invoked to  read its stdin (in  a shell pipeline),  set the
 " path so that it includes the shell cwd.
@@ -272,7 +278,34 @@ fu s:update_win() abort "{{{2
         let w:prediff_fdm = w:last_fdm
     endif
 
+    " let g:d_ebug = get(g:, 'd_ebug', []) + [{'fname': expand('%:p'), 'fdm': &l:fdm}]
     if &l:fdm is# 'manual' && exists('w:last_fdm')
+        " FIXME: Weird folding when we save a snippet file.{{{
+        "
+        " Make sure the Vim snippet file is not open; open it, and write it; the
+        " folding gets weird.
+        "
+        " For some  reason, the issue disappears  if you restart Vim,  and retry
+        " the experiment while the snippet file  was already open right from the
+        " start.
+        "
+        " The issue comes from the next line.
+        " When the issue is triggered, it sets the foldmethod to 'syntax'.
+        " Because of this,  the next `s:is_reasonable()` is true,  and the timer
+        " is invoked; I don't think it should.
+        "
+        " snippet files are  folded with markers; lazyfold  should not interfere
+        " with this method; it should only interfere with syntax/expr/indent.
+        "
+        " ---
+        "
+        " Why is the foldmethod manual in a long snippet file?  It should be marker...
+        " And why is  `w:last_fdm` set to `syntax`; it should not  be set at all
+        " (it's not set in a Vim file).
+        "
+        " Update:   `w:last_fdm`  is   set   because  of   the  `FileType`   and
+        " `BufWinEnter` autocmds.
+        "}}}
         let &l:fdm = w:last_fdm
     endif
 

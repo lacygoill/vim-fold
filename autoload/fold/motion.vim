@@ -34,7 +34,7 @@ fu fold#motion#go(lhs, mode) abort "{{{1
                 let level = len(matchstr(next_line, '^#\+'))
                 " search for ending of containing fold
                 return search('\ze\n#\{'..(level-1)..'}#\@!\|.*\%$', 'W')
-                "              ├───┘                       ├────┘
+                "              ├───┘                       ├────┘{{{
                 "              │                           └ OR, look for the last line.
                 "              │                             Why? The containing fold may be the last fold.
                 "              │                             In this case, there will be no next fold,
@@ -43,19 +43,23 @@ fu fold#motion#go(lhs, mode) abort "{{{1
                 "              └ ending of containing fold =
                 "                just before the first line of the next fold
                 "                whose level is the same as the containing one
+                "}}}
             endif
         endif
     endif
 
-    let keys = a:lhs is# '[Z'
+    let keys = a:lhs is# '[z'
            \ ?     'zk'
-           \ : a:lhs is# ']Z'
+           \ : a:lhs is# ']z'
            \ ?     'zj'
            \ :     a:lhs
 
     exe 'norm! '..v:count1..keys
 
     if a:mode isnot# 'no'
+        if get(maparg('j', 'n', 0, 1), 'rhs', '') =~# 'move_and_open_fold'
+            norm! zM
+        endif
         norm! zv
     endif
 endfu
