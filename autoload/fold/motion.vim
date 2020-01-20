@@ -48,9 +48,9 @@ fu fold#motion#go(lhs, mode) abort "{{{1
         endif
     endif
 
-    let keys = a:lhs is# '[z'
+    let keys = a:lhs is# '[Z'
            \ ?     'zk'
-           \ : a:lhs is# ']z'
+           \ : a:lhs is# ']Z'
            \ ?     'zj'
            \ :     a:lhs
 
