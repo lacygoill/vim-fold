@@ -3,6 +3,33 @@ if exists('g:loaded_fold')
 endif
 let g:loaded_fold = 1
 
+" Mappings {{{1
+
+" TODO: We call `#update_win()` in mappings which we use often (`:vimgrep` the whole plugin).
+" To improve the perf, could we wrap it behind a guard checking that the buffer is modified?
+" The idea being that if it's not, the folds have already been recomputed by our
+" autocmd listening to `BufWritePost`.
+" Will it cause an issue for inactive windows displaying the buffer?
+
+nno <silent> H :<c-u>call fold#collapse_expand#hlm('H')<cr>
+nno <silent> L :<c-u>call fold#collapse_expand#hlm('L')<cr>
+nno <silent> M :<c-u>call fold#collapse_expand#hlm('M')<cr>
+
+" Purpose: automatically add an empty line at the end of a multi-line comment so
+" that the end marker of the fold is on a dedicated line.
+nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
+
+" Why don't you use an autocmd to automatically fold a logfile?{{{
+"
+" 1. a logfile could have no `.log` extension
+"
+" 2. a logfile can be very big
+"
+"    Folding a big file can be slow.
+"    We should not pay this price systematically, only when we decide.
+"}}}
+nno <silent><unique> -l :<c-u>call fold#adhoc#main()<cr>
+
 " Why the `[Z` and `]Z` mappings?{{{
 "
 " By default the cursor is moved to the previous/next fold:
@@ -32,419 +59,23 @@ xno <silent> ]f :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#pr
 nno <silent> [of :<c-u>call fold#md#option#fdl('less')<cr>
 nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
 
-" Why don't you use an autocmd to automatically fold a logfile?{{{
-"
-" 1. a logfile could have no `.log` extension
-"
-" 2. a logfile can be very big
-"
-"    Folding a big file can be slow.
-"    We should not pay this price systematically, only when we decide.
-"}}}
-nno <silent><unique> -l :<c-u>call fold#adhoc#main()<cr>
+call map(['A', 'C', 'M', 'O', 'R', 'X', 'a', 'c', 'o', 'v', 'x'],
+    \ {_,v -> execute('nno <silent> z'..v..' :<c-u>call fold#lazy#update_win()<cr>z'..v)})
+nno <silent> <space><space> :<c-u>call fold#lazy#update_win()<cr>za
 
-" Purpose: automatically add an empty line at the end of a multi-line comment so
-" that the end marker of the fold is on a dedicated line.
-nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
+" I think that we sometimes try to open a fold from visual mode by accident.
+" It leads to an unexpected visual selection; let's prevent this from happening.
+xno <silent> <space><space> <esc>
 
-
-" finish
-
-" TODO: finish understanding/refactoring/reviewing/documenting the "Core" and "Interface" sections
-
-" TODO: Document how to test the syntax foldmethod.
-"
-"     $ git clone https://github.com/BurntSushi/ripgrep && cd *(/oc[1])
-"     $ vim --cmd 'let g:rust_fold=1' build.rs
-
-" TODO: We've removed `s:update_tab()` and the `VimEnter` autocmd which called it.
-" It didn't seem to be useful.  Why did FastFold used them?
-"
-"     au VimEnter * call s:update_tab()
-"     fu s:update_tab() abort
-"         if exists('g:SessionLoad') | return | endif
-"         call s:windo('call s:update_win()')
-"     endfu
-
-" TODO: When Vim  is invoked to  read its stdin (in  a shell pipeline),  set the
-" path so that it includes the shell cwd.
-" Also, tweak `'inex'` so that it removes a possible leading `./`.
-"
-" Rationale:
-" When we do sth like:
-"
-"     $ find -iname '*.rs' | vipe
-"
-" It would be nice to be able to press `ZF` on a path to open it in a split window.
-
-" Purpose:{{{
-"
-" Editing text in insert mode in a markdown buffer can sometimes be slow.
-"
-" MWE:
-"
-"     $ vim -Nu <(cat <<'EOF'
-"     setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
-"     fu Heading_depth(lnum)
-"         let nextline = getline(a:lnum+1)
-"         let level = len(matchstr(getline(a:lnum), '^#\{1,6}'))
-"         if !level
-"             if nextline =~# '^=\+\s*$'
-"                 return '>1'
-"             elseif nextline =~# '^-\+\s*$'
-"                 return '>2'
-"             endif
-"         endif
-"         return level
-"     endfu
-"     ino <expr> <c-k><c-k> repeat('<del>', 300)
-"     EOF
-"     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
-"
-" Vim takes several seconds to start.
-" Now, press `I C-k C-k` to delete the rest of the line.
-" Again, it takes several seconds.
-"
-" It seems the issue is `fold#md#fde#heading_depth()` which, for some reason, is
-" called more than 180,000 times!
-"
-" I think  that every time  a character is inserted  or removed while  in insert
-" mode, Vim has to  recompute the folding level of each line  above when using a
-" foldexpr.
-" That would  explain why  the issue  gets worse  as the  number of  lines above
-" increases, and why it gets worse  as the number of inserted/removed characters
-" increases.
-"
-" ---
-"
-" The main culprit is the value `'='` returned from `Heading_depth()`.
-" If you replace it with `1`, the slowness disappears.
-"}}}
-"   Why can't we just use `>1` and `1` to fix this issue?{{{
-"
-" I don't want to use `1` in `fold#md#fde#stacked()`; see the comments there.
-"
-" Besides, for a given buffer, we may be using:
-"
-"    - a different foldexpr which uses a costly value (e.g. `'='`, `'a123'`, `'s123'`)
-"    - a different folding method which can still be slow (e.g. `syntax`)
-"}}}
-"     Ok, so how does `vim-fold` fix it?{{{
-"
-" It lets Vim create folds according to the value of `'fdm'` (e.g. `foldexpr` or
-" `syntax`), then  it resets the latter  to `manual`, which is  much less costly
-" because this  doesn't ask Vim to  re-compute anything every time  you edit the
-" buffer.
-"
-" From `:h fold-methods`:
-"
-" >     Switching to  the "manual" method  doesn't remove the existing  folds.  This
-" >     can be  used to first  define the folds  automatically and then  change them
-" >     manually.
-"
-" ---
-"
-" You can observe the positive effect from `vim-fold` like this:
-"
-"     $ vim -Nu <(cat <<'EOF'
-"     set rtp^=~/.vim/plugged/vim-fold | setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
-"     fu Heading_depth(lnum)
-"         let level = len(matchstr(getline(a:lnum), '^#\{1,6}'))
-"         if !level
-"             if getline(a:lnum+1) =~ '^=\+\s*$'
-"                 let level = 1
-"             endif
-"         endif
-"         return level
-"     endfu
-"     ino <expr> <c-k> repeat('<del>', 300)
-"     EOF
-"     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
-"
-" If you get an error because of `lg#win_execute()`, add `vim-lg-lib` to the rtp.
-" In any case, Vim should start up immediately, and removing 300 characters with
-" `C-k` should also be instantaneous.
-"}}}
-
-" Init {{{1
-
-" Originally, `FastFold` used 200, but it seems too much.{{{
-"
-" Whatever value you use, make this experiment:
-"
-"                                       replace with the new number you want to use (minus 3)
-"                                       vvv  vvv
-"     $ vim +"%d | put='text' | norm! yy123pG123Ax" /tmp/md.md
-"     " make sure that 'fdm' is 'expr'
-"     " press:  I C-k C-k
-"
-" Check how much time it takes for Vim to remove all the characters.
-" Choose a value for which the time is acceptable.
-" 30 seems like a  good fit, because it's a round number, and  it's close to the
-" current maximum number of lines I can display in a window (`&lines`).
-"
-" `s:MIN_LINES` is  used to  determine whether  a file is  small, in  which case
-" `'fdm'` is not reset to `manual`.
-" It makes sense to consider a file which  fits on a single screen as small; but
-" not anything above.
-"}}}
-const s:MIN_LINES = 30
-
-" Interface {{{1
-
-" TODO: What does this command do? How is it useful compared to `zx`?{{{
-"
-" Update: I think  one of the difference  is that `zx` only  affects the current
-" window, while `FoldLazyCompute` affects all windows in the current tab page.
-"
-" ---
-"
-" Also, consider getting rid of it.
-" Just convert `s:update_buf()` into a public function.
-"}}}
-com -bar -bang FoldLazyCompute call s:update_buf(<bang>0)
-
-fu s:install_mappings() abort
-    nno <silent><unique> zuz :<c-u>FoldLazyCompute!<cr>
-    for suffix in ['x', 'X', 'a', 'A', 'o', 'O', 'c', 'C']
-        exe 'nno <silent> z'..suffix..' :<c-u>call <SID>update_win()<cr>z'..suffix
-    endfor
-    for cmd in ['[z', ']z', '[Z', ']Z']
-        " TODO: Integrate this in our current `[z` &friends mappings.{{{
-        "
-        " Try to call `fold#fast#update_win()` from `fold#motion#rhs()`.
-        " If you don't, and you prefer to use these mappings, you'll need to add
-        " `return ''` at the end of `s:update_win()`.
-        "
-        " You'll probably need to make `s:update_win()` a public function.
-        " If you don't want to (or can't), maybe you could use `:FoldLazyCompute`
-        " (if necessary, allow it to accept  an optional argument to tell it which
-        " function it should invoke...).
-        "}}}
-        "     exe 'nno <expr><silent> '..cmd..' <sid>update_win()..v:count..'..string(cmd)
-        "     exe 'xno <expr><silent> '..cmd..' <sid>update_win().."gv"..v:count..'..string(cmd)
-        "     exe 'ono <expr><silent> '..cmd..' "<esc>"..<sid>update_win()..''"''..v:register..v:operator..v:count1..'..string(cmd)
-    endfor
-endfu
-call s:install_mappings()
+" Autocmds{{{1
 
 augroup LazyFold
     au!
     " Make foldmethod local to buffer instead of window
     au WinEnter * if exists('b:last_fdm') | let w:last_fdm = b:last_fdm | endif
-    au WinLeave * call s:on_winleave()
-    " Update folds after:
-    " foldmethod set by saving, filetype autocmd, `:loadview` or `:source Session.vim`
-    au BufWritePost,FileType,SessionLoadPost * call s:update_buf(0)
-    " foldmethod set by modeline
-    au BufWinEnter * if !exists('b:lazyfold') | call s:update_buf(0) | let b:lazyfold = 1 | endif
-    " entering a changed buffer
-    au BufEnter * call s:on_bufenter()
-    au BufLeave * let b:lazyfold_lastchangedtick = b:changedtick
+    au WinLeave * call fold#lazy#on_winleave()
+    " Update folds after the foldmethod has been set by:
+    " saving, a filetype autocmd, `:loadview` or `:source Session.vim`
+    au BufWritePost,FileType,SessionLoadPost * call fold#lazy#update_buf()
 augroup END
-"}}}1
-" Core {{{1
-fu s:on_winleave() abort "{{{2
-    for var in ['last_fdm', 'prediff_fdm']
-        if exists('w:'..var)
-            let b:{var} = w:{var}
-        elseif exists('b:'..var)
-            unlet b:{var}
-        endif
-    endfor
-endfu
 
-fu s:on_bufenter() abort "{{{2
-    if !exists('b:lazyfold_lastchangedtick')
-        let b:lazyfold_lastchangedtick = b:changedtick
-    endif
-    if b:changedtick != b:lazyfold_lastchangedtick && &l:fdm isnot# 'diff' && exists('b:prediff_fdm')
-        call s:update_buf(0)
-    endif
-endfu
-
-fu s:update_win() abort "{{{2
-    if exists('w:prediff_fdm')
-        if empty(&l:fdm) || &l:fdm is# 'manual'
-            let &l:fdm = w:prediff_fdm
-            unlet w:prediff_fdm
-            return
-        elseif &l:fdm isnot# 'diff'
-            unlet w:prediff_fdm
-        endif
-    endif
-
-    if &l:fdm is# 'diff' && exists('w:last_fdm')
-        let w:prediff_fdm = w:last_fdm
-    endif
-
-    " let g:d_ebug = get(g:, 'd_ebug', []) + [{'fname': expand('%:p'), 'fdm': &l:fdm}]
-    if &l:fdm is# 'manual' && exists('w:last_fdm')
-        " FIXME: Weird folding when we save a snippet file.{{{
-        "
-        " Make sure the Vim snippet file is not open; open it, and write it; the
-        " folding gets weird.
-        "
-        " For some  reason, the issue disappears  if you restart Vim,  and retry
-        " the experiment while the snippet file  was already open right from the
-        " start.
-        "
-        " The issue comes from the next line.
-        " When the issue is triggered, it sets the foldmethod to 'syntax'.
-        " Because of this,  the next `s:is_reasonable()` is true,  and the timer
-        " is invoked; I don't think it should.
-        "
-        " snippet files are  folded with markers; lazyfold  should not interfere
-        " with this method; it should only interfere with syntax/expr/indent.
-        "
-        " ---
-        "
-        " Why is the foldmethod manual in a long snippet file?  It should be marker...
-        " And why is  `w:last_fdm` set to `syntax`; it should not  be set at all
-        " (it's not set in a Vim file).
-        "
-        " Update:   `w:last_fdm`  is   set   because  of   the  `FileType`   and
-        " `BufWinEnter` autocmds.
-        "}}}
-        let &l:fdm = w:last_fdm
-    endif
-
-    if s:should_skip()
-        if exists('w:last_fdm') | unlet w:last_fdm | endif
-    else
-        let w:last_fdm = &l:fdm
-        " Why do you delay `:setl fdm=manual`?{{{
-        "
-        " If you run it immediately, no fold will be created:
-        "
-        "     $ vim -Nu NONE -S <(cat <<'EOF'
-        "     setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
-        "     %d|pu=repeat(['x'], 5)|1
-        "     EOF
-        "     ) /tmp/file
-        "     " insert:  #
-        "     " run:  setl fdm=expr | setl fdm=manual
-        "     " no fold is created;
-        "     " but if you had run `:setl fdm=expr`, then later `:setl manual`, a fold would have been created
-        "}}}
-        "   Why not `:norm! zx`?{{{
-        "
-        " It also  undoes all manually  opened/closed folds, which  is annoying.
-        " And remember that `winsaveview()` does not save fold information.
-        "}}}
-        "   Which alternatives could I use?{{{
-        "
-        "     exe winnr()..'windo "'
-        "     setl fdm=manual
-        "
-        " Or:
-        "
-        "     let view = winsaveview()
-        "     norm! zizi
-        "     setl fdm=manual
-        "     call winrestview(view)
-        "}}}
-        "     Why don't you use them?{{{
-        "
-        " `:windo`  works, but  I don't  understand why;  and its  documentation
-        " doesn't say that it forces Vim to recompute folds.
-        " I  don't like  relying  on  an undocumented  feature;  the devs  would
-        " probably not care if it broke.
-        "
-        " `:norm! zizi` works too, but it's much costlier than `setwinvar()`:
-        "
-        "     :10000Time let view = winsaveview() | exe "norm! zizi" | call winrestview(view)
-        "     1.500 seconds to run ...~
-        "
-        "     :10000Time call timer_start(0, {-> ''}) | let [curwin, curbuf] = [win_getid(), bufnr('%')] | eval winbufnr(curwin) == curbuf && setwinvar(curwin, '&fdm', 'manual')
-        "     0.220 seconds to run ...~
-        "}}}
-        if s:is_reasonable()
-            let [curwin, curbuf] = [win_getid(), bufnr('%')]
-            call timer_start(0, {-> winbufnr(curwin) == curbuf && setwinvar(curwin, '&fdm', 'manual')})
-        endif
-    endif
-endfu
-
-fu s:update_buf(feedback) abort "{{{2
-    if exists('g:SessionLoad') | return | endif
-
-    " Why `was_open`?{{{
-    "
-    " When saving a  modified buffer containing a new fold,  the latter could be
-    " closed automatically; we don't want that.
-    "
-    " MWE:
-    "
-    "     $ vim -Nu NONE -S <(cat <<'EOF'
-    "     setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
-    "     au BufWritePost * setl fdm=expr | exe "norm! zizi" | setl fdm=manual
-    "     %d|sil pu=repeat(['x'], 5)|1
-    "     EOF
-    "     ) /tmp/md.md
-    "
-    "     " press:  O # Esc :w  (the fold is closed automatically)
-    "     " press:  O # Esc :w  (the fold is closed automatically if 'fml' is 0)
-    "
-    " I think that for the issue to be reproduced, you need to:
-    "
-    "    - set `'fdl'` to 0 (it is by default)
-    "    - modify the buffer so that the expr method detects a *new* fold
-    "    - switch from manual to expr
-    "}}}
-    let was_open = foldclosed('.') == -1
-    " TODO: Once Nvim supports `win_execute()`, remove `s:curbuf()`, and just use `s:curbuf` instead.{{{
-    "
-    " Here's why we need `s:curbuf()` in addition to `s:curbuf`.
-    "
-    " `s:windo()` invokes `lg#win_execute()`; the latter will invoke `win_execute()`:
-    "
-    "     call win_execute("if bufnr('%') == s:curbuf | call s:update_win() | endif")
-    "
-    " `win_execute()` will fail  to evaluate `s:curbuf` because  it's a variable
-    " local to a *different* script.
-    " OTOH, `win_execute()` *can* evaluate a script-local function provided that
-    " the `s:` scope has been translated  into `<snr>123_` (we take care of that
-    " in `lg#win_execute()`).
-    "
-    " So, we need to use a wrapper  function to refer to a script-local variable
-    " defined in a different script.
-    "}}}
-    let s:curbuf = bufnr('%')
-    call s:windo("if bufnr('%') == s:curbuf() | call s:update_win() | endif")
-    " TODO: Do we need to do that somewhere else?  If so, is there a better location to handle all cases?
-    if was_open && foldclosed('.') != -1
-        norm! zv
-    endif
-
-    if !a:feedback | return | endif
-
-    if !exists('w:last_fdm')
-        echom printf("'%s' folds already continuously updated", &l:fdm)
-    else
-        echom printf("updated '%s' folds", w:last_fdm)
-    endif
-endfu
-
-fu s:curbuf() abort
-    return s:curbuf
-endfu
-"}}}1
-" Utilities {{{1
-fu s:windo(cmd) abort "{{{2
-    if !empty(getcmdwintype()) | return | endif
-    call map(range(1, winnr('$')), {_,v -> lg#win_execute(win_getid(v), a:cmd)})
-endfu
-
-fu s:should_skip() abort "{{{2
-    return s:is_small() || !s:is_reasonable() || !empty(&bt) || !&l:ma
-endfu
-
-fu s:is_reasonable() abort "{{{2
-    return &l:fdm =~# '^\%(expr\|indent\|syntax\)$'
-endfu
-
-fu s:is_small() abort "{{{2
-    return line('$') <= s:MIN_LINES
-endfu
-"}}}1

@@ -1,4 +1,7 @@
-fu fold#motion#go(lhs, mode) abort "{{{1
+fu fold#motion#go(lhs, mode, cnt) abort "{{{1
+    " recompute folds to make sure they are up-to-date
+    call fold#lazy#update_win()
+
     if a:mode is# 'n'
         norm! m'
     elseif a:mode =~# "[vV\<c-v>]"
@@ -54,7 +57,7 @@ fu fold#motion#go(lhs, mode) abort "{{{1
            \ ?     'zj'
            \ :     a:lhs
 
-    exe 'norm! '..v:count1..keys
+    exe 'norm! '..a:cnt..keys
 
     if a:mode isnot# 'no'
         if get(maparg('j', 'n', 0, 1), 'rhs', '') =~# 'move_and_open_fold'
@@ -65,7 +68,7 @@ fu fold#motion#go(lhs, mode) abort "{{{1
 endfu
 
 fu fold#motion#rhs(lhs) abort "{{{1
-    let mode = mode(1)
+    let [mode, cnt] = [mode(1), v:count1]
 
     " If we're in visual block mode, we can't pass `C-v` directly.
     " It's going to by directly typed on the command-line.
@@ -82,9 +85,10 @@ fu fold#motion#rhs(lhs) abort "{{{1
     "
     " In operator-pending mode, usually, we want to operate on whole lines.
     "}}}
-    return printf("%s:\<c-u>call fold#motion#go(%s,%s)\<cr>",
-    \             mode is# 'no' ? 'V' : '',
-    \             string(a:lhs),
-    \             string(mode))
+    return printf("%s:\<c-u>call fold#motion#go(%s,%s,%d)\<cr>",
+        \ mode is# 'no' ? 'V' : '',
+        \ string(a:lhs),
+        \ string(mode),
+        \ cnt)
 endfu
 

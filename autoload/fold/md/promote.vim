@@ -1,5 +1,6 @@
 fu fold#md#promote#main(_) abort "{{{1
-    for i in range(1, v:count1)
+    let cnt = v:count1
+    for i in range(1, cnt)
         call s:promote()
     endfor
 endfu

@@ -30,8 +30,8 @@
 "         endif
 "     endfu
 " }}}1
-" Interface {{{1
-fu fold#md#fde#toggle() abort "{{{2
+
+fu fold#md#fde#toggle() abort "{{{1
     let &l:fde = &l:fde is# 'fold#md#fde#stacked()'
              \ ?     'fold#md#fde#nested()'
              \ :     'fold#md#fde#stacked()'
@@ -39,13 +39,12 @@ fu fold#md#fde#toggle() abort "{{{2
     "
     " We set `'fdm'` to `manual` by default, because `expr` can be much more expensive.
     " As a consequence, if we change  the value of `'fde'`, Vim won't re-compute
-    " the folds; we want it to; that's why we need to execute `:FoldLazyCompute`.
+    " the folds; we want it to; that's why we need to execute `#update_win()`.
     "}}}
-    FoldLazyCompute
+    call fold#lazy#update_win()
 endfu
 "}}}1
-" Core {{{1
-fu fold#md#fde#heading_depth(lnum) abort "{{{2
+fu fold#md#fde#heading_depth(lnum) abort "{{{1
     let thisline = getline(a:lnum)
     let level = len(matchstr(thisline, '^#\{1,6}'))
     if !level && thisline isnot# '' && thisline isnot# '```'
@@ -69,12 +68,12 @@ fu fold#md#fde#heading_depth(lnum) abort "{{{2
     return level
 endfu
 
-fu fold#md#fde#nested() abort "{{{2
+fu fold#md#fde#nested() abort "{{{1
     let depth = fold#md#fde#heading_depth(v:lnum)
     return depth > 0 ? '>'..depth : '='
 endfu
 
-fu fold#md#fde#stacked() abort "{{{2
+fu fold#md#fde#stacked() abort "{{{1
     " Why would it be useful to return `1` instead of `'='`?{{{
     "
     " Run this shell command:
