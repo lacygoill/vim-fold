@@ -105,6 +105,7 @@ augroup LazyFold
     "     au BufLeave * let b:lastchangedtick = b:changedtick
     "
     " We've removed them.  Why did we remove them?  Could they be useful?
+    "
     " ---
     "
     " Btw, I think the code could be simplified:

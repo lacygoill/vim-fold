@@ -270,7 +270,8 @@ fu fold#lazy#compute(...) abort "{{{2
     " There's no reason to recompute all the folds every time we press `SPC SPC`
     " to toggle a fold.
     " Same thing for any custom  mapping which invokes this function; especially
-    " if we press it frequently (e.g. `]Z` followed by a smashed `;`/`,`).
+    " if we press it frequently (e.g. `] SPC` followed by a smashed `.`, or `]Z`
+    " followed by a smashed `;`/`,`).
     "}}}
     if !a:0
         if b:changedtick == get(b:, 'lazyfold_changedtick')
