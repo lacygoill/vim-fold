@@ -1,6 +1,6 @@
 fu fold#motion#go(lhs, mode, cnt) abort "{{{1
     " recompute folds to make sure they are up-to-date
-    call fold#lazy#update_win()
+    call fold#lazy#compute()
 
     if a:mode is# 'n'
         norm! m'

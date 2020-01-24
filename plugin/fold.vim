@@ -5,12 +5,6 @@ let g:loaded_fold = 1
 
 " Mappings {{{1
 
-" TODO: We call `#update_win()` in mappings which we use often (`:vimgrep` the whole plugin).
-" To improve the perf, could we wrap it behind a guard checking that the buffer is modified?
-" The idea being that if it's not, the folds have already been recomputed by our
-" autocmd listening to `BufWritePost`.
-" Will it cause an issue for inactive windows displaying the buffer?
-
 nno <silent> H :<c-u>call fold#collapse_expand#hlm('H')<cr>
 nno <silent> L :<c-u>call fold#collapse_expand#hlm('L')<cr>
 nno <silent> M :<c-u>call fold#collapse_expand#hlm('M')<cr>
@@ -60,8 +54,8 @@ nno <silent> [of :<c-u>call fold#md#option#fdl('less')<cr>
 nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
 
 call map(['A', 'C', 'M', 'O', 'R', 'X', 'a', 'c', 'o', 'v', 'x'],
-    \ {_,v -> execute('nno <silent> z'..v..' :<c-u>call fold#lazy#update_win()<cr>z'..v)})
-nno <silent> <space><space> :<c-u>call fold#lazy#update_win()<cr>za
+    \ {_,v -> execute('nno <silent> z'..v..' :<c-u>call fold#lazy#compute()<cr>z'..v)})
+nno <silent> <space><space> :<c-u>call fold#lazy#compute()<cr>za
 
 " I think that we sometimes try to open a fold from visual mode by accident.
 " It leads to an unexpected visual selection; let's prevent this from happening.
@@ -71,11 +65,67 @@ xno <silent> <space><space> <esc>
 
 augroup LazyFold
     au!
-    " Make foldmethod local to buffer instead of window
+
+    " make foldmethod local to buffer instead of window
     au WinEnter * if exists('b:last_fdm') | let w:last_fdm = b:last_fdm | endif
     au WinLeave * call fold#lazy#on_winleave()
-    " Update folds after the foldmethod has been set by:
-    " saving, a filetype autocmd, `:loadview` or `:source Session.vim`
-    au BufWritePost,FileType,SessionLoadPost * call fold#lazy#update_buf()
+    " TODO: what do these 2 previous autocmds do?
+
+    " recompute folds in all windows displaying the current buffer,
+    " after saving it or after the foldmethod has been by a filetype plugin
+    " TODO: FastFold listened to `SessionLoadPost` too; why?
+    au BufWritePost,FileType * call fold#lazy#compute_all_windows()
+
+    " restore folds after a diff{{{
+    "
+    " Here's what happens to `'fdm'` when we diff a file which is folded with an expr:
+    "
+    "    1. fdm=expr (set by filetype plugin)
+    "    2. fdm=manual (reset by vim-fold)
+    "    3. fdm=diff (reset again when we diff the file)
+    "
+    " When we stop the diff, Vim resets `'diff'` to `manual`, because:
+    "
+    " >     Resets related options also when 'diff' was not set.
+    "
+    " Source: `:h :diffoff`.
+    "
+    " However, the folds have been lost when `'diff'` was set.
+    " We need  to make Vim recompute  them according to the  original foldmethod
+    " (the one set by our filetype plugin).
+    "}}}
+    au OptionSet diff call fold#lazy#handle_diff()
+
+    " TODO: These autocmds were in FastFold:{{{
+    "
+    "     au BufEnter *
+    "     \ if !exists('b:lastchangedtick') | let b:lastchangedtick = b:changedtick | endif |
+    "     \ if b:changedtick != b:lastchangedtick && (&l:fdm isnot# 'diff' && exists('b:prediff_fdm'))
+    "     \ | call s:UpdateBuf() | endif
+    "     au BufLeave * let b:lastchangedtick = b:changedtick
+    "
+    " We've removed them.  Why did we remove them?  Could they be useful?
+    " ---
+    "
+    " Btw, I think the code could be simplified:
+    "
+    "     au BufEnter *
+    "     \ if b:changedtick != get(b:, 'lastchangedtick', b:changedtick)
+    "     \ && (&l:fdm isnot# 'diff' && exists('b:prediff_fdm'))
+    "     \ | call s:UpdateBuf() | endif
+    "     au BufLeave * let b:lastchangedtick = b:changedtick
+    "
+    " ---
+    "
+    " I think these autocmds handle the case where we've just left diff mode:
+    "
+    "     &l:fdm isnot# 'diff' && exists('b:prediff_fdm')
+    "     ^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^
+    "     not in diff mode        but we were recently
+    "
+    " And the buffer has been changed:
+    "
+    "     b:changedtick != get(b:, 'lastchangedtick', b:changedtick)
+    "}}}
 augroup END
 
