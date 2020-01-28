@@ -3,6 +3,7 @@ fu fold#md#promote#main(_) abort "{{{1
     for i in range(1, cnt)
         call s:promote()
     endfor
+    norm! gv
 endfu
 
 fu s:promote() abort "{{{1

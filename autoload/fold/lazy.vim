@@ -3,21 +3,6 @@ if exists('g:autoloaded_fold#lazy')
 endif
 let g:autoloaded_fold#lazy = 1
 
-" TODO: We've removed `s:update_tab()` and the `VimEnter` autocmd which called it.
-" It didn't seem to be useful.  Why did FastFold use them?
-"
-"     au VimEnter * call s:update_tab()
-"     fu s:update_tab() abort
-"         if exists('g:SessionLoad') | return | endif
-"         call s:windo('call s:update_win()')
-"     endfu
-"
-" ---
-"
-" Also, FastFold delays the installation of the autocmds until `VimEnter`.
-" Should we do the same?  Why?
-" Does it have any effect on markdown files for which we reset 'fde' on bufwinenter?
-
 " FAQ{{{
 " What's the purpose of this script?{{{
 "
@@ -108,28 +93,50 @@ let g:autoloaded_fold#lazy = 1
 " `C-k C-k` should also be instantaneous.
 "}}}
 
-" When won't the folds be recomputed?{{{
+" When won't the foldmethod be reset from a costly value to 'manual'?{{{
 "
-" When  you  modify  a buffer  to  add  new  folded  text, the  folds  won't  be
-" recomputed until  you save  the buffer  or use  a custom  fold-related command
-" (e.g. `SPC SPC`, `]Z`), provided that the latter has been customized to invoke
-" `#compute()`.
+" When an autocmd installed after the ones from `vim-fold` resets `'fdm'`.
+" As an example, add this to `~/.vim/after/plugin/markdown.vim`:
 "
-" If you  use a  fold-related command, but  don't save, the  folds will  only be
-" recomputed in the current window; they won't be recomputed in inactive windows
-" displaying the current buffer.
-" If  this is  an  issue,  then you  should  refactor  your custom  fold-related
-" commands so that they invoke `#compute_all_windows()`.
+"     au FileType markdown setl fdm=expr
 "
-" I don't see the  necessity to do it right now;  `#compute()` seems good enough
-" until we save.
+" And disable the `BufWinEnter` autocmd in your markdown filetype plugin.
+" Finally, run:
+"
+"     $ vim
+"     :e /tmp/md.md
+"
+" The foldmethod is set to 'expr'.
+"
+" See: https://github.com/Konfekt/FastFold/commit/e14d31902fea2ee8fde22c99921ba946d18f692c
 "}}}
-" How to make Vim recompute folds in another script?{{{
+"   How to fix this possible issue?{{{
 "
-" Call `#compute()` if you want to recompute folds only in the current window.
-" If you call it from an autocmd, pass it an optional argument (e.g. 'force').
-" This will force Vim to recompute folds  no matter what, even if it has already
-" been done recently.
+" Delay the vim-fold autocmds until `VimEnter`.
+"
+" However, another issue will arise:
+"
+"     $ vim /tmp/md.md
+"
+" In that case, the foldmethod is still 'expr', even after delaying the autocmds.
+"
+" Solution: on `VimEnter` invoke `fold#lazy#compute()` in *all* windows
+" (*in addition to installing the autocmds*):
+"
+"     let winids = map(getwininfo(), {_,v -> v.winid})
+"     call map(winids, {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
+"
+" See:
+" https://github.com/Konfekt/FastFold/issues/30
+" https://github.com/Konfekt/FastFold/blob/bd88eed0c22a298a49f52a14a673bc1aad8c0a1b/plugin/fastfold.vim#L184
+"}}}
+"     Why don't you try to fix it?{{{
+"
+" I can't imagine a realistic scenario where this issue would affect us.
+" I think  it would require an  autocmd listening to `FileType`;  we would never
+" install such an autocmd to set the foldmethod.
+" We will always  use proper ftplugins, which are sourced  *before* the autocmds
+" of third-party plugins are fired.
 "}}}
 
 " Why could it be useful to disable the lazyfold feature in small files?{{{
@@ -193,6 +200,29 @@ let g:autoloaded_fold#lazy = 1
 " not anything above.
 "}}}
 
+" When won't the folds be recomputed?{{{
+"
+" When  you  modify  a buffer  to  add  new  folded  text, the  folds  won't  be
+" recomputed until  you save  the buffer  or use  a custom  fold-related command
+" (e.g. `SPC SPC`, `]Z`), provided that the latter has been customized to invoke
+" `#compute()`.
+"
+" If you  use a  fold-related command, but  don't save, the  folds will  only be
+" recomputed in the current window; they won't be recomputed in inactive windows
+" displaying the current buffer.
+" If  this is  an  issue,  then you  should  refactor  your custom  fold-related
+" commands so that they invoke `#compute_windows()`.
+"
+" I don't see the  necessity to do it right now;  `#compute()` seems good enough
+" until we save.
+"}}}
+" How to make Vim recompute folds in another script?{{{
+"
+" Call `#compute()` if you want to recompute folds only in the current window.
+" If you call it from an autocmd, pass it an optional argument (e.g. 'force').
+" This will force Vim to recompute folds  no matter what, even if it has already
+" been done recently.
+"}}}
 " I want to test how our "lazyfold" feature behaves when the foldmethod is set to syntax.  What should I do?{{{
 "
 "     $ git clone https://github.com/BurntSushi/ripgrep && cd *(/oc[1])
@@ -201,42 +231,62 @@ let g:autoloaded_fold#lazy = 1
 "}}}
 
 " Interface{{{1
-fu fold#lazy#on_winleave() abort "{{{2
-    " TODO: why?{{{
-    "
-    " It  seems  that   the  purpose  is  to  make   the  buffer-local  variable
-    " synchronized with the window-local variable.
-    " If the window-local variable exists, the buffer-local one must exist too.
-    " And if the window-local variable does not exist, the buffer-local one must not exist either.
-    "}}}
-    for var in ['last_fdm', 'prediff_fdm']
-        if exists('w:'..var)
-            let b:{var} = w:{var}
-        elseif exists('b:'..var)
-            unlet b:{var}
-        endif
-    endfor
-endfu
-
-fu fold#lazy#compute_all_windows() abort "{{{2
-    " TODO: Why?
-    " if exists('g:SessionLoad') | return | endif
-
+fu fold#lazy#compute_windows() abort "{{{2
+    " compute folds in each window displaying the current buffer; not just the current window
     let curbuf = bufnr('%')
     let winids = map(filter(getwininfo(), {_,v -> v.bufnr == curbuf}), {_,v -> v.winid})
-    call map(winids, {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
-
-    " TODO: Understand what this block did, before removing it definitively.
+    " When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
     "
-    "     if !a:feedback | return | endif
-    "     if !exists('w:last_fdm')
-    "         echom printf("'%s' folds already continuously updated", &l:fdm)
-    "     else
-    "         echom printf("updated '%s' folds", w:last_fdm)
-    "     endif
+    " Replace the next line with this block:
+    "
+    "     let curlnum = line('.')
+    "     let was_visible = foldclosed('.') == -1
+    "     call map(copy(winids), {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
+    "     call map(winids, {_,v -> lg#win_execute(v,
+    "         \ 'exe '..was_visible..' && foldclosed('..curlnum..') != -1 ? "norm! '..curlnum..'Gzv" : ""')})
+    "
+    " The issue is due to the fact  that the current line in inactive windows is
+    " not synchronized with the current line in the active window.
+    "
+    " ---
+    "
+    " I don't  try to fix this  "issue" because it  adds too much code  for what
+    " seems to be  an edge case.
+    "
+    " Note that the previous block could  change the current line of an inactive
+    " window; you may want to preserve it.
+    "
+    " Besides, whether  it's an  issue is  debatable.  I mean  the fold  did not
+    " exist in  an inactive window, so  when Vim closes it  automatically there,
+    " you can't  say that its state  has not been  preserved; it did not  have a
+    " state to begin with.
+    "}}}
+    call map(copy(winids), {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
 endfu
 
 fu fold#lazy#compute(...) abort "{{{2
+    " Why not just inspecting `&l:diff`?{{{
+    "
+    " It would cause this issue:
+    "
+    "     $ vimdiff /tmp/md1.md /tmp/md2.md
+    "     :tabnew
+    "     :e /tmp/md2.md
+    "     :echo &l:fdm
+    "     expr~
+    "     " it should be 'manual'
+    "
+    " That's because the window in the new  tab page has copied the local values
+    " of some options from a diffed window (including `'diff'` which is set).
+    "}}}
+    if &l:fdm is# 'diff' | return | endif
+    " If the file is to be skipped, make sure `b:last_fdm` does not exist.{{{
+    "
+    " Its existence has a meaning for our  code; I suspect that keeping it while
+    " the file is to be skipped could lead to subtle bugs.
+    "}}}
+    if s:should_skip() | unlet! b:last_fdm b:lazyfold_changedtick | return | endif
+
     " To improve performance, bail out if folds have been recomputed recently.
     " What's this optional argument?{{{
     "
@@ -248,18 +298,15 @@ fu fold#lazy#compute(...) abort "{{{2
     "}}}
     "     it does not exist?{{{
     "
-    " When the function invocation is triggered by:
+    " When  we call  `#compute()`  from  a custom  mapping,  we  don't pass  the
+    " optional argument, to  let the function know that it  should not recompute
+    " folds if it has already been done recently.
+    " Otherwise, if the mapping is pressed  repeatedly very fast, there would be
+    " too much lag in a big file.
     "
-    "    - an  autocmd, it  doesn't  matter  that  folds have  been  recomputed
-    "      recently, we want them to be recomputed no matter what
-    "
-    "    - a custom mapping, we don't want folds to be recomputed unconditionally;
-    "      if the mapping is pressed repeatedly very fast, there would be too much
-    "      lag in a big file
-    "
-    " When  we invoke  the function  from a  custom mapping,  we don't  pass the
-    " optional argument, to let it know that it should not recompute folds if it
-    " has already been done recently.
+    " When  we call  `#compute()`  from  an autocmd,  we  do  pass the  optional
+    " argument, because  in that case  we want them  to be recomputed  no matter
+    " what (even if they have been recomputed recently).
     "}}}
     "     and the buffer has changed?{{{
     "
@@ -273,7 +320,15 @@ fu fold#lazy#compute(...) abort "{{{2
     " if we press it frequently (e.g. `] SPC` followed by a smashed `.`, or `]Z`
     " followed by a smashed `;`/`,`).
     "}}}
-    if !a:0
+    "     why don't you bail out if the buffer is not modified?{{{
+    "
+    " Suppose you delete a fold, then undo.
+    " The buffer is still unmodified, but the folding information has been lost.
+    " For Vim, this text you've restored is not folded.
+    " We probably expect Vim to recompute the fold when we press `SPC SPC` inside.
+    "}}}
+    let force = a:0
+    if !force
         if b:changedtick == get(b:, 'lazyfold_changedtick')
             return
         else
@@ -281,24 +336,9 @@ fu fold#lazy#compute(...) abort "{{{2
         endif
     endif
 
-    " TODO: what does this do?
-    if exists('w:prediff_fdm')
-        if empty(&l:fdm) || &l:fdm is# 'manual'
-            let &l:fdm = w:prediff_fdm
-            unlet w:prediff_fdm
-            return
-        elseif &l:fdm isnot# 'diff'
-            unlet w:prediff_fdm
-        endif
-    endif
-
-    " TODO: what does this do?
-    if &l:fdm is# 'diff' && exists('w:last_fdm')
-        let w:prediff_fdm = w:last_fdm
-    endif
-
-    if &l:fdm is# 'manual' && exists('w:last_fdm')
-        " Why `was_open`?{{{
+    " temporarily restore the original costly foldmethod
+    if exists('b:last_fdm') && &l:fdm is# 'manual'
+        " Don't close a new fold automatically.{{{
         "
         " When saving a  modified buffer containing a new fold,  the latter could be
         " closed automatically; we don't want that.
@@ -306,9 +346,9 @@ fu fold#lazy#compute(...) abort "{{{2
         " MWE:
         "
         "     $ vim -Nu NONE -S <(cat <<'EOF'
-        "     setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
-        "     au BufWritePost * setl fdm=expr | exe "norm! zizi" | setl fdm=manual
-        "     %d|sil pu=repeat(['x'], 5)|1
+        "         setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
+        "         au BufWritePost * setl fdm=expr | eval foldlevel(1) | setl fdm=manual
+        "         %d|sil pu=repeat(['x'], 5)|1
         "     EOF
         "     ) /tmp/md.md
         "
@@ -321,37 +361,42 @@ fu fold#lazy#compute(...) abort "{{{2
         "    - modify the buffer so that the expr method detects a *new* fold
         "    - switch from manual to expr
         "}}}
-        " Do *not* move `norm! zv` in `#compute_all_windows()`.{{{
+        let was_visible = foldclosed('.') == -1
+        let &l:fdm = b:last_fdm
+        " Wait.  Aren't the folds recomputed only when the dummy assignment is executed?{{{
         "
-        " The latter is only invoked on certain events:
-        "
-        "     FileType
-        "     BufWritePost
-        "     BufWinEnter
-        "
-        " `#compute()` is invoked from `#compute_all_windows()`, but we can also
-        " invoke it manually; we do it e.g. in `fold#motion#go()`.
-        "
-        " As a  result, if you  moved `norm! zv` in  `#compute_all_windows()`, a
-        " new fold  would not be recomputed  immediately when we press  `]z`; we
-        " would need to press it twice.
-        "
-        " ---
-        "
-        " Old Comment:
-        "
-        "     OTOH, `#compute()` is invoked once  for every window displaying the
-        "     current buffer in the current tab page.
-        "
-        "     However, `norm! zv`  would only work in the current  window; it would fail
-        "     in  all the  other windows  when executed  by `win_execute()`,  because it
-        "     opens folds to reveal the line *under the cursor*.
-        "     But when you create  a new fold, your cursor has a  *new* position; in the
-        "     other windows the cursor keeps its old position.
+        " Any folding-related function causes folds to be recomputed.
+        " So the  evaluation of the next  `foldclosed()` causes the folds  to be
+        " recomputed  immediately (to  be  accurate, they  are recomputed  right
+        " before computing the fold level of the current line).
         "}}}
-        let was_open = foldclosed('.') == -1
-        let &l:fdm = w:last_fdm
-        if was_open && foldclosed('.') != -1
+        if was_visible && foldclosed('.') != -1
+            " Do *not* move `norm! zv` in `#compute_windows()`.{{{
+            "
+            " The latter is only invoked on certain events:
+            "
+            "     FileType
+            "     BufWritePost
+            "     BufWinEnter
+            "
+            " This is not frequent enough.
+            "
+            " E.g. we manually call `#compute()` from `fold#motion#go()`.
+            " If you moved `:norm! zv`  in `#compute_windows()`, it would not be
+            " executed when we  press `]z`, which would prevent  the latter from
+            " moving the cursor to the end of a *new* open fold.
+            "
+            " It would work only after pressing it twice.
+            " Indeed,  the first  time,  the fold  would be  closed  as soon  as
+            " vim-fold executes:
+            "
+            "     let &l:fdm = b:last_fdm
+            "
+            " Btw, the reason why the fold seems to stay open is because `#go()`
+            " runs `:norm! zv`  at the end; but it *is*  temporarily closed, and
+            " it  *is* closed  right  before  `]z` is  pressed  by `#go()`  (via
+            " `:norm`) for the first time in a new fold.
+            "}}}
             " `:norm! zv` may be executed in an inactive window.{{{
             "
             " Which is ok.
@@ -376,60 +421,59 @@ fu fold#lazy#compute(...) abort "{{{2
         endif
     endif
 
-    if s:should_skip()
-        " TODO: why?
-        unlet! w:last_fdm
-    else
-        let w:last_fdm = &l:fdm
-        " Why this dummy assignment?{{{
-        "
-        " To make sure Vim recomputes folds, before we reset the foldmethod to manual.
-        " Without, there is a risk that no fold would be created:
-        "
-        "     $ vim -Nu NONE -S <(cat <<'EOF'
-        "     setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
-        "     %d|pu=repeat(['x'], 5)|1
-        "     EOF
-        "     ) /tmp/file
-        "     " insert:  #
-        "     " run:  setl fdm=expr | setl fdm=manual
-        "     " no fold is created;
-        "     " but a fold would have been created if you had run:
-        "
-        "         :setl fdm=expr | let _ = foldlevel(1) | setl fdm=manual
-        "
-        "      or
-        "
-        "         :setl fdm=expr | exe '1windo "' | setl fdm=manual
-        "
-        "      or
-        "
-        "         :setl fdm=expr
-        "         :setl manual
-        "
-        " ---
-        "
-        " I  don't know  why/how  it  works, but  the  original FastFold  plugin
-        " implicitly  relies  on a  side-effect  of  `:windo`  for folds  to  be
-        " recomputed before resetting the foldmethod to manual.
-        "}}}
-        "   Why not `:norm! zx`?{{{
-        "
-        " It does not preserve manually opened/closed folds.
-        " And remember that `winsaveview()` does not save fold information.
-        "}}}
-        let _ = foldlevel(1)
-        setl fdm=manual
-    endif
+    " and now get back to 'manual'
+    let b:last_fdm = &l:fdm
+    " Why this dummy assignment?{{{
+    "
+    " To make sure Vim recomputes folds, before we reset the foldmethod to manual.
+    " Without, there is a risk that no fold would be created:
+    "
+    "     $ vim -Nu NONE -S <(cat <<'EOF'
+    "     setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
+    "     %d|pu=repeat(['x'], 5)|1
+    "     EOF
+    "     ) /tmp/file
+    "     " insert:  #
+    "     " run:  setl fdm=expr | setl fdm=manual
+    "     " no fold is created;
+    "     " but a fold would have been created if you had run:
+    "
+    "         :setl fdm=expr | let _ = foldlevel(1) | setl fdm=manual
+    "
+    "      or
+    "
+    "         :setl fdm=expr | exe '1windo "' | setl fdm=manual
+    "
+    "      or
+    "
+    "         :setl fdm=expr
+    "         :setl manual
+    "
+    " ---
+    "
+    " I don't know why/how it works, but the original FastFold plugin implicitly
+    " relies on  a side-effect  of `:windo`  for folds  to be  recomputed before
+    " resetting the foldmethod to manual.
+    "}}}
+    "   Why not `:norm! zx`?{{{
+    "
+    " It does not preserve manually opened/closed folds.
+    " Note that `winsaveview()` does not save fold information.
+    "}}}
+    let _ = foldlevel(1)
+    setl fdm=manual
 endfu
 
 fu fold#lazy#handle_diff() abort "{{{2
-    if v:option_new == 1 && v:option_old == 0
-        let w:prediff_fdm = w:last_fdm
-    elseif v:option_new == 0 && v:option_old == 1 && exists('w:prediff_fdm')
-        let &l:fdm = w:prediff_fdm
+    let enter_diff_mode = v:option_new == 1 && v:option_old == 0
+    let leave_diff_mode = v:option_new == 0 && v:option_old == 1
+
+    if enter_diff_mode && exists('b:last_fdm')
+        let b:prediff_fdm = b:last_fdm
+    elseif leave_diff_mode && exists('b:prediff_fdm')
+        let &l:fdm = b:prediff_fdm
         let _ = foldlevel(1)
-        unlet w:prediff_fdm
+        unlet b:prediff_fdm
     endif
 endfu
 "}}}1
@@ -439,6 +483,7 @@ fu s:should_skip() abort "{{{2
 endfu
 
 fu s:is_costly() abort "{{{2
-    return &l:fdm =~# '^\%(expr\|indent\|syntax\)$'
+    let pat = '^\%(expr\|indent\|syntax\)$'
+    return (exists('b:last_fdm') && b:last_fdm =~# pat) || &l:fdm =~# pat
 endfu
 

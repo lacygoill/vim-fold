@@ -42,8 +42,8 @@ noremap <expr><silent><unique> ]Z fold#motion#rhs(']Z')
 noremap <expr><silent><unique> [z fold#motion#rhs('[z')
 noremap <expr><silent><unique> ]z fold#motion#rhs(']z')
 
-xno <silent> [f :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<bar>exe 'norm! '..v:count1..'g@l'<cr>
-xno <silent> ]f :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<bar>exe 'norm! '..v:count1..'g@l'<cr>
+xno <silent> H :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<bar>exe 'norm! '..v:count1..'g@l'<cr>
+xno <silent> L :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<bar>exe 'norm! '..v:count1..'g@l'<cr>
 
 " Increase/decrease  'fdl', in  a  markdown  buffer  in “nesting” mode.{{{
 " Use it to quickly see the titles up to an arbitrary depth.
@@ -65,16 +65,9 @@ xno <silent> <space><space> <esc>
 
 augroup LazyFold
     au!
-
-    " make foldmethod local to buffer instead of window
-    au WinEnter * if exists('b:last_fdm') | let w:last_fdm = b:last_fdm | endif
-    au WinLeave * call fold#lazy#on_winleave()
-    " TODO: what do these 2 previous autocmds do?
-
     " recompute folds in all windows displaying the current buffer,
-    " after saving it or after the foldmethod has been by a filetype plugin
-    " TODO: FastFold listened to `SessionLoadPost` too; why?
-    au BufWritePost,FileType * call fold#lazy#compute_all_windows()
+    " after saving it or after the foldmethod has been set by a filetype plugin
+    au BufWritePost,FileType * call fold#lazy#compute_windows()
 
     " restore folds after a diff{{{
     "
@@ -84,7 +77,8 @@ augroup LazyFold
     "    2. fdm=manual (reset by vim-fold)
     "    3. fdm=diff (reset again when we diff the file)
     "
-    " When we stop the diff, Vim resets `'diff'` to `manual`, because:
+    " When we stop  the diff with `:diffoff`, Vim  automatically resets `'diff'`
+    " to `manual`, because:
     "
     " >     Resets related options also when 'diff' was not set.
     "
@@ -95,38 +89,4 @@ augroup LazyFold
     " (the one set by our filetype plugin).
     "}}}
     au OptionSet diff call fold#lazy#handle_diff()
-
-    " TODO: These autocmds were in FastFold:{{{
-    "
-    "     au BufEnter *
-    "     \ if !exists('b:lastchangedtick') | let b:lastchangedtick = b:changedtick | endif |
-    "     \ if b:changedtick != b:lastchangedtick && (&l:fdm isnot# 'diff' && exists('b:prediff_fdm'))
-    "     \ | call s:UpdateBuf() | endif
-    "     au BufLeave * let b:lastchangedtick = b:changedtick
-    "
-    " We've removed them.  Why did we remove them?  Could they be useful?
-    "
-    " ---
-    "
-    " Btw, I think the code could be simplified:
-    "
-    "     au BufEnter *
-    "     \ if b:changedtick != get(b:, 'lastchangedtick', b:changedtick)
-    "     \ && (&l:fdm isnot# 'diff' && exists('b:prediff_fdm'))
-    "     \ | call s:UpdateBuf() | endif
-    "     au BufLeave * let b:lastchangedtick = b:changedtick
-    "
-    " ---
-    "
-    " I think these autocmds handle the case where we've just left diff mode:
-    "
-    "     &l:fdm isnot# 'diff' && exists('b:prediff_fdm')
-    "     ^^^^^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^
-    "     not in diff mode        but we were recently
-    "
-    " And the buffer has been changed:
-    "
-    "     b:changedtick != get(b:, 'lastchangedtick', b:changedtick)
-    "}}}
 augroup END
-
