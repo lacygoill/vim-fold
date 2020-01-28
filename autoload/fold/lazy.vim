@@ -294,9 +294,7 @@ fu fold#lazy#compute(...) abort "{{{2
     " But by convention, use the string 'force'.
     " When it exists, it means that we want folds to be recomputed no matter what.
     "}}}
-    "   Ok, and why do you bail out only when{{{
-    "}}}
-    "     it does not exist?{{{
+    "   Ok, and why do you bail out only when it does not exist?{{{
     "
     " When  we call  `#compute()`  from  a custom  mapping,  we  don't pass  the
     " optional argument, to  let the function know that it  should not recompute
@@ -308,7 +306,7 @@ fu fold#lazy#compute(...) abort "{{{2
     " argument, because  in that case  we want them  to be recomputed  no matter
     " what (even if they have been recomputed recently).
     "}}}
-    "     and the buffer has changed?{{{
+    "     and only when the buffer has changed?{{{
     "
     " If the buffer has not changed, there's no reason to recompute the folds.
     "
@@ -327,14 +325,10 @@ fu fold#lazy#compute(...) abort "{{{2
     " For Vim, this text you've restored is not folded.
     " We probably expect Vim to recompute the fold when we press `SPC SPC` inside.
     "}}}
-    let force = a:0
-    if !force
-        if b:changedtick == get(b:, 'lazyfold_changedtick')
-            return
-        else
-            let b:lazyfold_changedtick = b:changedtick
-        endif
+    if !a:0 && b:changedtick == get(b:, 'lazyfold_changedtick')
+        return
     endif
+    let b:lazyfold_changedtick = b:changedtick
 
     " temporarily restore the original costly foldmethod
     if exists('b:last_fdm') && &l:fdm is# 'manual'
