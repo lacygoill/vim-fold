@@ -41,7 +41,7 @@ fu fold#md#fde#toggle() abort "{{{1
     " As a consequence, if we change  the value of `'fde'`, Vim won't re-compute
     " the folds; we want it to; that's why we need to execute `#compute()`.
     "}}}
-    call fold#lazy#compute()
+    call fold#lazy#compute('force')
 endfu
 "}}}1
 fu fold#md#fde#heading_depth(lnum) abort "{{{1
