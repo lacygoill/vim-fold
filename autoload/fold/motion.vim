@@ -13,18 +13,16 @@ let g:autoloaded_fold#motion = 1
 "
 " Whichever is the nearest.
 "
+" Exception: when the folding method is  'marker', the cursor should not move on
+" a line containing a folding marker; it should move right above.
+"
 " `[z` should move the cursor to:
 "
-"    - the start of the current fold
-"    - the start of the previous fold
+"    - right below the start of the current fold
+"    - right below the start of the previous fold
 "    - right below the end of the previous nested fold
 "
 " Whichever is the nearest.
-"
-" Exception: when the folding method is  'marker', the cursor should not move on
-" a line containing a folding marker.
-" It should move right above (for a line containing a *closing* fold marker), or
-" right below (for a line containing an *opening* fold marker).
 "}}}
 
 " Init {{{1
@@ -33,7 +31,7 @@ let g:autoloaded_fold#motion = 1
 " (open vs closed).
 " Warning: When set, the motions may be slow in files with a lot of folds.
 " If that's an issue, adjust `s:BIG_FILE`.
-const s:PRESERVE_FOLD_STATE = 0
+const s:PRESERVE_FOLD_STATE = 1
 
 " Saving/restoring the  state of all the  folds takes time; the  more folds, the
 " longer it takes  (e.g. vimrc); as a  workaround, we bite the  bullet and never
@@ -126,7 +124,7 @@ fu s:next_fold(lhs) abort
         if moved_just_above
             return s:next_fold('[z')
         elseif is_fold_start || (is_fold_end && is_next_line_foldable)
-            " we don't want to jump on the first line of a fold; just after
+            " don't jump on the first line of a fold; just after
             +
         else
             return s:next_fold('[z')

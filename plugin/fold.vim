@@ -39,8 +39,9 @@ nno <silent> [of :<c-u>call fold#md#option#fdl('less')<cr>
 nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
 
 call map(['A', 'C', 'M', 'O', 'R', 'X', 'a', 'c', 'o', 'v', 'x'],
-    \ {_,v -> execute('nno <silent> z'..v..' :<c-u>call fold#lazy#compute()<cr>z'..v)})
-nno <silent> <space><space> :<c-u>call fold#lazy#compute()<cr>za
+    \ {_,v -> execute('nno <silent> z'..v
+    \ ..' :<c-u>call fold#lazy#compute()<bar>exe "norm! "..(v:count ? v:count : "").."z'..v..'"<cr>')})
+nno <silent> <space><space> :<c-u>call fold#lazy#compute()<bar>exe 'norm! '..(v:count ? v:count : '')..'za'<cr>
 
 " I think that we sometimes try to open a fold from visual mode by accident.
 " It leads to an unexpected visual selection; let's prevent this from happening.
