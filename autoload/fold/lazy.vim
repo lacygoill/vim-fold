@@ -446,7 +446,7 @@ fu fold#lazy#compute(...) abort "{{{2
     " ---
     "
     " I don't know why/how it works, but the original FastFold plugin implicitly
-    " relies on  a side-effect  of `:windo`  for folds  to be  recomputed before
+    " relies on  a side effect  of `:windo`  for folds  to be  recomputed before
     " resetting the foldmethod to manual.
     "}}}
     "   Why not `:norm! zx`?{{{
