@@ -36,7 +36,7 @@ const s:PRESERVE_FOLD_STATE = 1
 " Saving/restoring the  state of all the  folds takes time; the  more folds, the
 " longer it takes  (e.g. vimrc); as a  workaround, we bite the  bullet and never
 " preserve the state of the folds in big files.
-const s:BIG_FILE = 2000
+const s:BIG_FILE = 1000
 
 fu fold#motion#go(lhs, mode, cnt) abort "{{{1
     " recompute folds to make sure they are up-to-date
@@ -88,7 +88,8 @@ fu s:next_fold(lhs) abort
         keepj norm! zk
         let next += [line('.')]
         call filter(next, 'v:val != '..orig)
-        if !empty(next) | keepj exe max(next) | endif
+        if empty(next) | return | endif
+        keepj exe max(next)
 
         let is_fold_start = s:is_fold_start()
         let is_fold_end = s:is_fold_end()
@@ -127,6 +128,7 @@ fu s:next_fold(lhs) abort
             " don't jump on the first line of a fold; just after
             +
         else
+            " `silent!` to suppress `E132` when there are no folds in a Vim file
             return s:next_fold('[z')
         endif
 
@@ -138,7 +140,8 @@ fu s:next_fold(lhs) abort
         keepj norm! zj
         let next += [line('.')]
         call filter(next, 'v:val != '..orig)
-        if !empty(next) | keepj exe min(next) | endif
+        if empty(next) | return | endif
+        keepj exe min(next)
 
         let is_fold_start = s:is_fold_start()
         let is_fold_end = s:is_fold_end()
