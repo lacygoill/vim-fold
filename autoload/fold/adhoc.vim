@@ -3,7 +3,10 @@ fu fold#adhoc#main() abort "{{{1
         return
     endif
     let b:title_like_in_markdown = 1
-    if &ft is# '' && expand('%:p') =~# '^/proc/' && search('^٪', 'n')
+    if &bt is# 'terminal' && has('nvim')
+        echo 'terminal buffer can''t be folded; see:  https://github.com/neovim/neovim/issues/5682'
+        return
+    elseif &bt is# 'terminal' || (&ft is# '' && expand('%:p') =~# '^/proc/' && search('^٪', 'n'))
         setl fdm=expr
         setl fde=getline(v:lnum)=~#'^٪'?'>1':'='
         setl fdt=fold#fdt#get()

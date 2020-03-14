@@ -22,7 +22,7 @@ nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
 "    Folding a big file can be slow.
 "    We should not pay this price systematically, only when we decide.
 "}}}
-nno <silent><unique> -l :<c-u>call fold#adhoc#main()<cr>
+nno <silent><unique> za :<c-u>call fold#adhoc#main()<cr>
 
 noremap <expr><silent><unique> [z fold#motion#rhs('[z')
 noremap <expr><silent><unique> ]z fold#motion#rhs(']z')
@@ -38,7 +38,7 @@ xno <silent> L :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#pro
 nno <silent> [of :<c-u>call fold#md#option#fdl('less')<cr>
 nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
 
-call map(['A', 'C', 'M', 'O', 'R', 'X', 'a', 'c', 'o', 'v', 'x'],
+call map(['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x'],
     \ {_,v -> execute('nno <silent> z'..v
     \ ..' :<c-u>call fold#lazy#compute()<bar>exe "norm! "..(v:count ? v:count : "").."z'..v..'"<cr>')})
 nno <silent> <space><space> :<c-u>call fold#lazy#compute()<bar>exe 'norm! '..(v:count ? v:count : '')..'za'<cr>
