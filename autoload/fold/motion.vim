@@ -38,7 +38,67 @@ const s:PRESERVE_FOLD_STATE = 1
 " preserve the state of the folds in big files.
 const s:BIG_FILE = 1000
 
-fu fold#motion#go(lhs, mode, cnt) abort "{{{1
+fu s:snr() abort
+    return matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_')
+endfu
+let s:snr = get(s:, 'snr', s:snr())
+
+" Interface {{{1
+fu fold#motion#rhs(lhs) abort "{{{2
+    if &l:fdm is# 'manual' && !exists('b:last_fdm')
+        return ''
+    endif
+
+    let [mode, cnt] = [mode(1), v:count1]
+    " If we're in visual block mode, we can't pass `C-v` directly.{{{
+    "
+    " It's going to by directly typed on the command-line.
+    " On the command-line, `C-v` means:
+    "
+    "     “insert the next character literally”
+    "
+    " The solution is to double `C-v`.
+    "}}}
+    if mode is# "\<c-v>"
+        let mode = "\<c-v>\<c-v>"
+    endif
+
+    " Why pressing Escape from visual mode?{{{
+    "
+    " To make sure  the cursor is positioned  on the corner of  the selection we
+    " were controlling.  Otherwise,  it could be unexpectedly  positioned on the
+    " other corner:
+    "
+    "     $ vim -Nu NONE +"pu=['aaa', 'bbb', 'ccc']" +'norm! 1GVG'
+    "     " press:  colon C-u Enter
+    "     " the cursor gets positioned on the first line instead of the last line
+    "
+    " ---
+    "
+    " Btw, don't bother trying to stay in visual mode.
+    " Our  code  may execute  commands  which  makes  us  quit the  visual  mode
+    " frequently (e.g. `zo`, `zc`; `zv` and motions are ok though).
+    "}}}
+    " Why pressing `V` in operator-pending mode?{{{
+    "
+    " Because in that mode, usually, we want to operate on whole lines.
+    "}}}
+    "   Why not `mode =~# 'o'` instead of `mode is# 'no'`?{{{
+    "
+    " We don't want to force the motion to be linewise unconditionally.
+    " E.g., we could have manually forced it to be characterwise or blockwise.
+    " In those cases, we should not interfere; it would be unexpected.
+    "}}}
+    return printf("%s%s:\<c-u>call "..s:snr.."jump(%s,%s,%d)\<cr>",
+        \ mode =~# "^[vV\<c-v>]$" ? "\e" : '',
+        \ mode is# 'no' ? 'V' : '',
+        \ string(a:lhs),
+        \ string(mode),
+        \ cnt)
+endfu
+"}}}1
+" Core {{{1
+fu s:jump(lhs, mode, cnt) abort "{{{2
     " recompute folds to make sure they are up-to-date
     call fold#lazy#compute()
 
@@ -221,58 +281,5 @@ fu s:winrestview(view) abort
     let pos = getcurpos()
     call winrestview(a:view)
     call setpos('.', pos)
-endfu
-
-fu fold#motion#rhs(lhs) abort "{{{1
-    if &l:fdm is# 'manual' && !exists('b:last_fdm')
-        return ''
-    endif
-
-    let [mode, cnt] = [mode(1), v:count1]
-    " If we're in visual block mode, we can't pass `C-v` directly.{{{
-    "
-    " It's going to by directly typed on the command-line.
-    " On the command-line, `C-v` means:
-    "
-    "     “insert the next character literally”
-    "
-    " The solution is to double `C-v`.
-    "}}}
-    if mode is# "\<c-v>"
-        let mode = "\<c-v>\<c-v>"
-    endif
-
-    " Why pressing Escape from visual mode?{{{
-    "
-    " To make sure  the cursor is positioned  on the corner of  the selection we
-    " were controlling.  Otherwise,  it could be unexpectedly  positioned on the
-    " other corner:
-    "
-    "     $ vim -Nu NONE +"pu=['aaa', 'bbb', 'ccc']" +'norm! 1GVG'
-    "     " press:  colon C-u Enter
-    "     " the cursor gets positioned on the first line instead of the last line
-    "
-    " ---
-    "
-    " Btw, don't bother trying to stay in visual mode.
-    " Our  code  may execute  commands  which  makes  us  quit the  visual  mode
-    " frequently (e.g. `zo`, `zc`; `zv` and motions are ok though).
-    "}}}
-    " Why pressing `V` in operator-pending mode?{{{
-    "
-    " Because in that mode, usually, we want to operate on whole lines.
-    "}}}
-    "   Why not `mode =~# 'o'` instead of `mode is# 'no'`?{{{
-    "
-    " We don't want to force the motion to be linewise unconditionally.
-    " E.g., we could have manually forced it to be characterwise or blockwise.
-    " In those cases, we should not interfere; it would be unexpected.
-    "}}}
-    return printf("%s%s:\<c-u>call fold#motion#go(%s,%s,%d)\<cr>",
-        \ mode =~# "^[vV\<c-v>]$" ? "\e" : '',
-        \ mode is# 'no' ? 'V' : '',
-        \ string(a:lhs),
-        \ string(mode),
-        \ cnt)
 endfu
 

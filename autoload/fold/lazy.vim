@@ -375,7 +375,8 @@ fu fold#lazy#compute(...) abort "{{{2
             "
             " This is not frequent enough.
             "
-            " E.g. we manually call `#compute()` from `fold#motion#go()`.
+            " E.g.  we manually  call  `#compute()` from  `s:jump()` (called  by
+            " `fold#motion#rhs()`).
             " If you moved `:norm! zv`  in `#compute_windows()`, it would not be
             " executed when we  press `]z`, which would prevent  the latter from
             " moving the cursor to the end of a *new* open fold.
