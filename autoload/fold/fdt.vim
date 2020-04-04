@@ -1,13 +1,13 @@
 fu fold#fdt#get() abort "{{{1
-    let line = getline(v:foldstart)
+    let foldstartline = getline(v:foldstart)
     " get the desired level of indentation for the title
-    if &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
-        let level = fold#md#fde#heading_depth(v:foldstart)
+    if get(b:, 'title_like_in_markdown', 0)
+        let level = markdown#fold#foldexpr#heading_depth(v:foldstart)
         let indent = repeat(' ', (level-1)*3)
     else
-        let indent = line =~# '{{\%x7b\d\+\s*$'
+        let indent = foldstartline =~# '{{\%x7b\d\+\s*$'
                  \ ?     repeat(' ', (v:foldlevel-1)*3)
-                 \ :     matchstr(getline(v:foldstart), '^\s*')
+                 \ :     matchstr(foldstartline, '^\s*')
     endif
 
     " If you don't care about html and css, you could probably simplify the code
@@ -32,11 +32,11 @@ fu fold#fdt#get() abort "{{{1
         let pat ..= '\|\s*'..cml_right..'\s*'..cml_left..'\s*{{\%x7b\d*\s*'..cml_right..'\s*$'
     endif
 
-    let title = substitute(line, pat, '', 'g')
+    let title = substitute(foldstartline, pat, '', 'g')
 
     " remove filetype specific noise
-    let title = &ft is# 'markdown' || get(b:, 'title_like_in_markdown', 0)
-            \ ?     substitute(getline(v:foldstart), '^[-=#]\+\s*', '', '')
+    let title = get(b:, 'title_like_in_markdown', 0)
+            \ ?     substitute(foldstartline, '^[-=#]\+\s*', '', '')
             \ : &ft is# 'sh' || &ft is# 'zsh'
             \ ?     substitute(title, '^.*\zs()\s*\%({\|(\)', '', '')
             \ : &ft is# 'vim'

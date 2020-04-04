@@ -32,8 +32,8 @@ let g:autoloaded_fold#lazy = 1
 " Now, press `I C-k C-k` to delete the rest of the line.
 " Again, it takes several seconds.
 "
-" It seems the issue is `fold#md#fde#heading_depth()` which, for some reason, is
-" called more than 180,000 times!
+" It seems the issue is `markdown#fold#foldexpr#heading_depth()` which, for some
+" reason, is called more than 180,000 times!
 "
 " I think  that every time  a character is inserted  or removed while  in insert
 " mode, Vim has to  recompute the folding level of each line  above when using a
@@ -49,7 +49,7 @@ let g:autoloaded_fold#lazy = 1
 "}}}
 "   Why can't I just use `>1` and `1` to fix this issue?{{{
 "
-" We don't want to use `1` in `fold#md#fde#stacked()`; see the comments there.
+" We don't want to use `1` in `markdown#fold#foldexpr#stacked()`; see the comments there.
 "
 " Besides, for a given buffer, we may be using:
 "

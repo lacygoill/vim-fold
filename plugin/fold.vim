@@ -27,17 +27,6 @@ nno <silent><unique> za :<c-u>call fold#adhoc#main()<cr>
 noremap <expr><silent><unique> [z fold#motion#rhs('[z')
 noremap <expr><silent><unique> ]z fold#motion#rhs(']z')
 
-xno <silent> H :<c-u>call fold#md#promote#set('less')<bar>set opfunc=fold#md#promote#main<bar>exe 'norm! '..v:count1..'g@l'<cr>
-xno <silent> L :<c-u>call fold#md#promote#set('more')<bar>set opfunc=fold#md#promote#main<bar>exe 'norm! '..v:count1..'g@l'<cr>
-
-" Increase/decrease  'fdl', in  a  markdown  buffer  in “nesting” mode.{{{
-" Use it to quickly see the titles up to an arbitrary depth.
-" Useful  to get  an overview  of  the contents  of  the notes  of an  arbitrary
-" precision.
-"}}}
-nno <silent> [of :<c-u>call fold#md#option#fdl('less')<cr>
-nno <silent> ]of :<c-u>call fold#md#option#fdl('more')<cr>
-
 call map(['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x'],
     \ {_,v -> execute('nno <silent> z'..v
     \ ..' :<c-u>call fold#lazy#compute()<bar>exe "norm! "..(v:count ? v:count : "").."z'..v..'"<cr>')})
