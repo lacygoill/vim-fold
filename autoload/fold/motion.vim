@@ -209,7 +209,10 @@ fu s:next_fold(lhs) abort
         let has_end_marker = &l:fdm is# 'marker' && getline('.') =~# split(&l:fmr, ',')[1]..'\d*\s*$'
         let moved_just_below = line('.') == orig + 1
 
-        if (is_fold_start || has_end_marker) && moved_just_below
+        " special case: if we're before the *first* fold, jump right before its start (instead of its end)
+        if is_fold_start && !is_previous_line_foldable && !moved_just_below
+            -
+        elseif (is_fold_start || has_end_marker) && moved_just_below
             " don't be stuck right before a fold end (this issue is due to `:-`)
             return s:next_fold(']z')
         elseif (is_fold_start || has_end_marker) && is_previous_line_foldable
