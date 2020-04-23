@@ -14,7 +14,7 @@ let g:autoloaded_fold#lazy = 1
 "     setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
 "     fu Heading_depth(lnum)
 "         let nextline = getline(a:lnum+1)
-"         let level = len(matchstr(getline(a:lnum), '^#\{1,6}'))
+"         let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
 "         if !level
 "             if nextline =~# '^=\+\s*$'
 "                 return '>1'
@@ -76,7 +76,7 @@ let g:autoloaded_fold#lazy = 1
 "     $ vim -Nu <(cat <<'EOF'
 "     set rtp^=~/.vim/plugged/vim-fold | setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
 "     fu Heading_depth(lnum)
-"         let level = len(matchstr(getline(a:lnum), '^#\{1,6}'))
+"         let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
 "         if !level
 "             if getline(a:lnum+1) =~ '^=\+\s*$'
 "                 let level = 1

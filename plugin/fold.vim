@@ -34,7 +34,7 @@ nno <silent> <space><space> :<c-u>call fold#lazy#compute()<bar>exe 'norm! '..(v:
 
 " I think that we sometimes try to open a fold from visual mode by accident.
 " It leads to an unexpected visual selection; let's prevent this from happening.
-xno <silent> <space><space> <esc>
+xno <silent> <space><space> <c-\><c-n>
 
 " Autocmds{{{1
 
