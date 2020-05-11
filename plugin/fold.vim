@@ -38,8 +38,7 @@ xno <silent> <space><space> <c-\><c-n>
 
 " Autocmds{{{1
 
-augroup LazyFold
-    au!
+augroup LazyFold | au!
     " recompute folds in all windows displaying the current buffer,
     " after saving it or after the foldmethod has been set by a filetype plugin
     au BufWritePost,FileType * call fold#lazy#compute_windows()

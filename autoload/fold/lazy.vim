@@ -163,7 +163,7 @@ let g:autoloaded_fold#lazy = 1
 "   Which pitfalls should I be aware of?{{{
 "
 " `s:MIN_LINES` adds complexity; not in terms of number of lines of code, but in
-" terms of the logic; it increases the number of code paths.
+" terms of logic; it increases the number of code paths.
 "
 " Suppose the script contains a bug which  can be reproduced when some options A
 " and B are both on, or both off.
