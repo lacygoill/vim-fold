@@ -11,7 +11,7 @@ nno <silent> M :<c-u>call fold#collapse_expand#hlm('M')<cr>
 
 " Purpose: automatically add an empty line at the end of a multi-line comment so
 " that the end marker of the fold is on a dedicated line.
-nno <silent><unique> zfic :<c-u>set opfunc=fold#comment#main<cr>g@l
+nno <expr><unique> zfic fold#comment#main()
 
 " Why don't you use an autocmd to automatically fold a logfile?{{{
 "
