@@ -47,7 +47,7 @@ fu fold#fdt#get() abort "{{{1
 
     if get(b:, 'foldtitle_full', 0)
         let foldsize  = (v:foldend - v:foldstart)
-        let linecount = '['..foldsize..']'..repeat(' ', 4 - strchars(foldsize))
+        let linecount = '['..foldsize..']'..repeat(' ', 4 - strlen(foldsize))
         return indent ..(foldsize > 1 ? linecount : '')..title
     else
         return indent..title
