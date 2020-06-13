@@ -88,9 +88,8 @@ let g:autoloaded_fold#lazy = 1
 "     EOF
 "     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
 "
-" If you get an error because of `lg#win_execute()`, add `vim-lg-lib` to the rtp.
-" In any case, Vim should start up immediately, and removing 300 characters with
-" `C-k C-k` should also be instantaneous.
+" Vim should  start up immediately, and  removing 300 characters with  `C-k C-k`
+" should also be instantaneous.
 "}}}
 
 " When won't the foldmethod be reset from a costly value to 'manual'?{{{
@@ -124,7 +123,7 @@ let g:autoloaded_fold#lazy = 1
 " (*in addition to installing the autocmds*):
 "
 "     let winids = map(getwininfo(), {_,v -> v.winid})
-"     call map(winids, {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
+"     call map(winids, {_,v -> win_execute(v, 'call fold#lazy#compute("force")')})
 "
 " See:
 " https://github.com/Konfekt/FastFold/issues/30
@@ -241,8 +240,8 @@ fu fold#lazy#compute_windows() abort "{{{2
     "
     "     let curlnum = line('.')
     "     let was_visible = foldclosed('.') == -1
-    "     call map(copy(winids), {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
-    "     call map(winids, {_,v -> lg#win_execute(v,
+    "     call map(copy(winids), {_,v -> win_execute(v, 'call fold#lazy#compute("force")')})
+    "     call map(winids, {_,v -> win_execute(v,
     "         \ 'exe '..was_visible..' && foldclosed('..curlnum..') != -1 ? "norm! '..curlnum..'Gzv" : ""')})
     "
     " The issue is due to the fact  that the current line in inactive windows is
@@ -261,7 +260,7 @@ fu fold#lazy#compute_windows() abort "{{{2
     " you can't  say that its state  has not been  preserved; it did not  have a
     " state to begin with.
     "}}}
-    call map(copy(winids), {_,v -> lg#win_execute(v, 'call fold#lazy#compute("force")')})
+    call map(copy(winids), {_,v -> win_execute(v, 'call fold#lazy#compute("force")')})
 endfu
 
 fu fold#lazy#compute(...) abort "{{{2
