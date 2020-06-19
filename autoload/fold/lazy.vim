@@ -1,8 +1,3 @@
-if exists('g:autoloaded_fold#lazy')
-    finish
-endif
-let g:autoloaded_fold#lazy = 1
-
 " FAQ{{{
 " What's the purpose of this script?{{{
 "
