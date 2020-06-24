@@ -152,7 +152,7 @@
 " And update `s:should_skip()` to include it:
 "
 "     return s:is_small() || !s:is_costly() || !empty(&bt) || !&l:ma
-"            ^^^^^^^^^^^^
+"            ^----------^
 "}}}
 "   Which pitfalls should I be aware of?{{{
 "
@@ -180,7 +180,7 @@
 " Whatever value you use for `s:MIN_LINES`, make this experiment:
 "
 "                                       replace with the new number you want to use (minus 3)
-"                                       vvv  vvv
+"                                       v-v  v-v
 "     $ vim +"%d | put='text' | norm! yy123pG123Ax" /tmp/md.md
 "     " make sure that 'fdm' is 'expr'
 "     " press:  I C-k C-k
