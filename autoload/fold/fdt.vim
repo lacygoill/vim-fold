@@ -40,7 +40,7 @@ fu fold#fdt#get() abort "{{{1
             \ : &ft is# 'sh' || &ft is# 'zsh'
             \ ?     substitute(title, '^.*\zs()\s*\%({\|(\)', '', '')
             \ : &ft is# 'vim'
-            \ ?     substitute(title, '^\s*fu\%[nction]!\= \%(.*\%(#\|s:\)\)\=\(.\{-}\)(.*).*', '\1', '')
+            \ ?     substitute(title, '^\s*\%(fu\%[nction]\|def\)!\= \%(.*\%(#\|s:\)\)\=\(.\{-}\)(.*).*', '\1', '')
             \ : &ft is# 'python'
             \ ?     substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
             \ :     title
