@@ -38,11 +38,6 @@ const s:PRESERVE_FOLD_STATE = 1
 " preserve the state of the folds in big files.
 const s:BIG_FILE = 1000
 
-fu s:snr() abort
-    return matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_')
-endfu
-let s:snr = get(s:, 'snr', s:snr())
-
 " Interface {{{1
 fu fold#motion#rhs(lhs) abort "{{{2
     if &l:fdm is# 'manual' && !exists('b:last_fdm')
@@ -89,9 +84,10 @@ fu fold#motion#rhs(lhs) abort "{{{2
     " E.g., we could have manually forced it to be characterwise or blockwise.
     " In those cases, we should not interfere; it would be unexpected.
     "}}}
-    return printf("%s%s:\<c-u>call "..s:snr.."jump(%s,%s,%d)\<cr>",
+    return printf("%s%s:\<c-u>call " .. "%s(%s,%s,%d)\<cr>",
         \ mode =~# "^[vV\<c-v>]$" ? "\e" : '',
         \ mode is# 'no' ? 'V' : '',
+        \ function('s:jump'),
         \ string(a:lhs),
         \ string(mode),
         \ cnt)
