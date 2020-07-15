@@ -6,20 +6,20 @@
 " MWE:
 "
 "     $ vim -Nu <(cat <<'EOF'
-"     setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
-"     fu Heading_depth(lnum)
-"         let nextline = getline(a:lnum+1)
-"         let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
-"         if !level
-"             if nextline =~# '^=\+\s*$'
-"                 return '>1'
-"             elseif nextline =~# '^-\+\s*$'
-"                 return '>2'
+"         setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
+"         fu Heading_depth(lnum)
+"             let nextline = getline(a:lnum+1)
+"             let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
+"             if !level
+"                 if nextline =~# '^=\+\s*$'
+"                     return '>1'
+"                 elseif nextline =~# '^-\+\s*$'
+"                     return '>2'
+"                 endif
 "             endif
-"         endif
-"         return level
-"     endfu
-"     ino <expr> <c-k><c-k> repeat('<del>', 300)
+"             return level
+"         endfu
+"         ino <expr> <c-k><c-k> repeat('<del>', 300)
 "     EOF
 "     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
 "
@@ -69,17 +69,19 @@
 " You can observe the positive effect from `vim-fold` like this:
 "
 "     $ vim -Nu <(cat <<'EOF'
-"     set rtp^=~/.vim/plugged/vim-fold | setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
-"     fu Heading_depth(lnum)
-"         let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
-"         if !level
-"             if getline(a:lnum+1) =~ '^=\+\s*$'
-"                 let level = 1
+"         filetype on
+"         set rtp^=~/.vim/plugged/vim-fold rtp^=~/.vim/plugged/vim-markdown
+"         setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
+"         fu Heading_depth(lnum)
+"             let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
+"             if !level
+"                 if getline(a:lnum+1) =~ '^=\+\s*$'
+"                     let level = 1
+"                 endif
 "             endif
-"         endif
-"         return level
-"     endfu
-"     ino <expr> <c-k><c-k> repeat('<del>', 300)
+"             return level
+"         endfu
+"         ino <expr> <c-k><c-k> repeat('<del>', 300)
 "     EOF
 "     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
 "
@@ -418,8 +420,8 @@ fu fold#lazy#compute(...) abort "{{{2
     " Without, there is a risk that no fold would be created:
     "
     "     $ vim -Nu NONE -S <(cat <<'EOF'
-    "     setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
-    "     %d|pu=repeat(['x'], 5)|1
+    "         setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
+    "         %d|pu=repeat(['x'], 5)|1
     "     EOF
     "     ) /tmp/file
     "     " insert:  #
