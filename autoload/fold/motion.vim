@@ -84,7 +84,7 @@ fu fold#motion#rhs(lhs) abort "{{{2
     " E.g., we could have manually forced it to be characterwise or blockwise.
     " In those cases, we should not interfere; it would be unexpected.
     "}}}
-    return printf("%s%s:\<c-u>call " .. "%s(%s,%s,%d)\<cr>",
+    return printf("%s%s:\<c-u>call " .. "%s(%s, %s, %d)\<cr>",
         \ mode =~# "^[vV\<c-v>]$" ? "\e" : '',
         \ mode is# 'no' ? 'V' : '',
         \ function('s:jump'),
@@ -118,8 +118,9 @@ fu s:jump(lhs, mode, cnt) abort "{{{2
         call s:next_fold(a:lhs)
     endfor
 
-    if s:PRESERVE_FOLD_STATE && line('$') <= s:BIG_FILE
-        \ && get(maparg('j', 'n', 0, 1), 'rhs', '') !~# 'move_and_open_fold'
+    if s:PRESERVE_FOLD_STATE
+        \ && line('$') <= s:BIG_FILE
+        \ && maparg('j', 'n', 0, 1)->get('rhs', '') !~# 'move_and_open_fold'
         call s:foldreststate(state)
     else
         norm! zM
@@ -128,7 +129,7 @@ fu s:jump(lhs, mode, cnt) abort "{{{2
     call s:winrestview(view)
 
     if a:mode =~# "^[vV\<c-v>]$"
-        exe 'norm! '..fixed_corner..'GV'..line('.')..'G'
+        exe 'norm! ' .. fixed_corner .. 'GV' .. line('.') .. 'G'
     endif
 endfu
 
@@ -143,13 +144,13 @@ fu s:next_fold(lhs) abort
         keepj exe orig
         keepj norm! zk
         let next += [line('.')]
-        call filter(next, 'v:val != '..orig)
+        call filter(next, 'v:val != ' .. orig)
         if empty(next) | return | endif
         keepj exe max(next)
 
         let is_fold_start = s:is_fold_start()
         let is_fold_end = s:is_fold_end()
-        let is_next_line_foldable = foldlevel(line('.')+1) > 0
+        let is_next_line_foldable = (line('.') + 1)->foldlevel() > 0
         let moved_just_above = line('.') == orig - 1
 
         " FIXME: Doesn't always work as expected.{{{
@@ -161,7 +162,7 @@ fu s:next_fold(lhs) abort
         "
         " This could be fixed by replacing `if moved_just_above` with:
         "
-        "     let is_foldlvl_bigger_on_previous_line = foldlevel('.') < foldlevel(line('.')-1)
+        "     let is_foldlvl_bigger_on_previous_line = foldlevel('.') < (line('.') - 1)->foldlevel()
         "     if is_foldlvl_bigger_on_previous_line
         "         if !moved_just_above && is_next_line_foldable
         "             +
@@ -195,14 +196,14 @@ fu s:next_fold(lhs) abort
         keepj exe orig
         keepj norm! zj
         let next += [line('.')]
-        call filter(next, 'v:val != '..orig)
+        call filter(next, 'v:val != ' .. orig)
         if empty(next) | return | endif
         keepj exe min(next)
 
         let is_fold_start = s:is_fold_start()
         let is_fold_end = s:is_fold_end()
-        let is_previous_line_foldable = foldlevel(line('.')-1) > 0
-        let has_end_marker = &l:fdm is# 'marker' && getline('.') =~# split(&l:fmr, ',')[1]..'\d*\s*$'
+        let is_previous_line_foldable = (line('.') - 1)->foldlevel() > 0
+        let has_end_marker = &l:fdm is# 'marker' && getline('.') =~# split(&l:fmr, ',')[1] .. '\d*\s*$'
         let moved_just_below = line('.') == orig + 1
 
         " special case: if we're before the *first* fold, jump right before its start (instead of its end)
@@ -268,10 +269,10 @@ endfu
 fu s:foldreststate(state) abort
     let pos = getcurpos()
     for lnum in a:state.open
-        exe 'norm! '..lnum..'Gzo'
+        exe 'norm! ' .. lnum .. 'Gzo'
     endfor
     for lnum in a:state.closed
-        exe 'norm! '..lnum..'Gzc'
+        exe 'norm! ' .. lnum .. 'Gzc'
     endfor
     call setpos('.', pos)
 endfu

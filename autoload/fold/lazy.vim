@@ -9,7 +9,7 @@
 "         setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
 "         fu Heading_depth(lnum)
 "             let nextline = getline(a:lnum+1)
-"             let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
+"             let level = getline(a:lnum)->matchstr('^#\{1,6}')->strlen()
 "             if !level
 "                 if nextline =~# '^=\+\s*$'
 "                     return '>1'
@@ -73,7 +73,7 @@
 "         set rtp^=~/.vim/plugged/vim-fold rtp^=~/.vim/plugged/vim-markdown
 "         setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
 "         fu Heading_depth(lnum)
-"             let level = strlen(matchstr(getline(a:lnum), '^#\{1,6}'))
+"             let level = getline(a:lnum)->matchstr('^#\{1,6}')->strlen()
 "             if !level
 "                 if getline(a:lnum+1) =~ '^=\+\s*$'
 "                     let level = 1
@@ -119,8 +119,8 @@
 " Solution: on `VimEnter` invoke `fold#lazy#compute()` in *all* windows
 " (*in addition to installing the autocmds*):
 "
-"     let winids = map(getwininfo(), {_,v -> v.winid})
-"     call map(winids, {_,v -> win_execute(v, 'call fold#lazy#compute("force")')})
+"     let winids = getwininfo()->map({_, v -> v.winid})
+"     call map(winids, {_, v -> win_execute(v, 'call fold#lazy#compute("force")')})
 "
 " See:
 " https://github.com/Konfekt/FastFold/issues/30
@@ -230,16 +230,18 @@
 fu fold#lazy#compute_windows() abort "{{{2
     " compute folds in each window displaying the current buffer; not just the current window
     let curbuf = bufnr('%')
-    let winids = map(filter(getwininfo(), {_,v -> v.bufnr == curbuf}), {_,v -> v.winid})
+    let winids = getwininfo()
+        \ ->filter({_, v -> v.bufnr == curbuf})
+        \ ->map({_, v -> v.winid})
     " When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
     "
     " Replace the next line with this block:
     "
     "     let curlnum = line('.')
     "     let was_visible = foldclosed('.') == -1
-    "     call map(copy(winids), {_,v -> win_execute(v, 'call fold#lazy#compute("force")')})
-    "     call map(winids, {_,v -> win_execute(v,
-    "         \ 'exe '..was_visible..' && foldclosed('..curlnum..') != -1 ? "norm! '..curlnum..'Gzv" : ""')})
+    "     call copy(winids)->map({_, v -> win_execute(v, 'call fold#lazy#compute("force")')})
+    "     call map(winids, {_, v -> win_execute(v,
+    "         \ 'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') != -1 ? "norm! ' .. curlnum .. 'Gzv" : ""')})
     "
     " The issue is due to the fact  that the current line in inactive windows is
     " not synchronized with the current line in the active window.
@@ -257,7 +259,7 @@ fu fold#lazy#compute_windows() abort "{{{2
     " you can't  say that its state  has not been  preserved; it did not  have a
     " state to begin with.
     "}}}
-    call map(copy(winids), {_,v -> win_execute(v, 'call fold#lazy#compute("force")')})
+    call copy(winids)->map({_, v -> win_execute(v, 'call fold#lazy#compute("force")')})
 endfu
 
 fu fold#lazy#compute(...) abort "{{{2
