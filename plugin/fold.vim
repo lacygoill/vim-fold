@@ -54,7 +54,7 @@ augroup LazyFold | au!
     " When we stop  the diff with `:diffoff`, Vim  automatically resets `'diff'`
     " to `manual`, because:
     "
-    " >     Resets related options also when 'diff' was not set.
+    "    > Resets related options also when 'diff' was not set.
     "
     " Source: `:h :diffoff`.
     "

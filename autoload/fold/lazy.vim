@@ -60,9 +60,9 @@
 "
 " From `:h fold-methods`:
 "
-" >     Switching to  the "manual" method  doesn't remove the existing  folds.  This
-" >     can be  used to first  define the folds  automatically and then  change them
-" >     manually.
+"    > Switching to  the "manual" method  doesn't remove the existing  folds.  This
+"    > can be  used to first  define the folds  automatically and then  change them
+"    > manually.
 "
 " ---
 "
