@@ -37,6 +37,10 @@ fu fold#fdt#get() abort "{{{1
         let pat ..= '\|\s*' .. cml_right .. '\s*' .. cml_left .. '\s*{{\%x7b\d*\s*' .. cml_right .. '\s*$'
     endif
 
+    " we often use backticks for codespans, but a codespan's highlighting is not
+    " visible in a fold title, so backticks are just noise; remove them
+    let pat ..= '\|`'
+
     let title = substitute(foldstartline, pat, '', 'g')
 
     " remove filetype specific noise

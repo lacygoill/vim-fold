@@ -466,7 +466,7 @@ fu fold#lazy#handle_diff() abort "{{{2
     elseif leave_diff_mode && exists('b:prediff_fdm')
         let &l:fdm = b:prediff_fdm
         let _ = foldlevel(1)
-        unlet b:prediff_fdm
+        unlet! b:prediff_fdm
     endif
 endfu
 "}}}1

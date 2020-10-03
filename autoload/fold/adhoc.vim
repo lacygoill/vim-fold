@@ -1,9 +1,11 @@
+import InTerminalBuffer from 'lg.vim'
+
 fu fold#adhoc#main() abort "{{{1
     if !(&ft == '' || &ft is# 'markdown' && search('^health#', 'n'))
         return
     endif
     let b:title_like_in_markdown = 1
-    if &bt is# 'terminal' || (&ft == '' && expand('%:p') =~# '^/proc/' && search('^٪', 'n'))
+    if s:InTerminalBuffer()
         setl fdm=expr
         setl fde=getline(v:lnum)=~#'^٪'?'>1':'='
         setl fdt=fold#fdt#get()
