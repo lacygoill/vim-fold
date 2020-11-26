@@ -84,7 +84,7 @@ fu fold#motion#rhs(lhs) abort "{{{2
     " E.g., we could have manually forced it to be characterwise or blockwise.
     " In those cases, we should not interfere; it would be unexpected.
     "}}}
-    return printf("%s%s:\<c-u>call " .. "%s(%s, %s, %d)\<cr>",
+    return printf("%s%s\<cmd>call " .. "%s(%s, %s, %d)\<cr>",
         \ mode =~# "^[vV\<c-v>]$" ? "\e" : '',
         \ mode is# 'no' ? 'V' : '',
         \ function('s:jump'),

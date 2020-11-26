@@ -5,9 +5,9 @@ let g:loaded_fold = 1
 
 " Mappings {{{1
 
-nno <silent> H :<c-u>call fold#collapse_expand#hlm('H')<cr>
-nno <silent> L :<c-u>call fold#collapse_expand#hlm('L')<cr>
-nno <silent> M :<c-u>call fold#collapse_expand#hlm('M')<cr>
+nno H <cmd>call fold#collapse_expand#hlm('H')<cr>
+nno L <cmd>call fold#collapse_expand#hlm('L')<cr>
+nno M <cmd>call fold#collapse_expand#hlm('M')<cr>
 
 " Purpose: automatically add an empty line at the end of a multi-line comment so
 " that the end marker of the fold is on a dedicated line.
@@ -22,19 +22,19 @@ nno <expr><unique> zfic fold#comment#main()
 "    Folding a big file can be slow.
 "    We should not pay this price systematically, only when we decide.
 "}}}
-nno <silent><unique> za :<c-u>call fold#adhoc#main()<cr>
+nno <unique> za <cmd>call fold#adhoc#main()<cr>
 
-noremap <expr><silent><unique> [z fold#motion#rhs('[z')
-noremap <expr><silent><unique> ]z fold#motion#rhs(']z')
+noremap <expr><unique> [z fold#motion#rhs('[z')
+noremap <expr><unique> ]z fold#motion#rhs(']z')
 
 call map(['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x'],
-    \ {_, v -> execute('nno <silent> z' .. v
-    \ .. ' :<c-u>call fold#lazy#compute()<bar>exe "norm! " .. (v:count ? v:count : "") .. "z' .. v .. '"<cr>')})
-nno <silent> <space><space> :<c-u>call fold#lazy#compute()<bar>exe 'norm! ' .. (v:count ? v:count : '') .. 'za'<cr>
+    \ {_, v -> execute('nno z' .. v
+    \ .. ' <cmd>call fold#lazy#compute()<bar>exe "norm! " .. (v:count ? v:count : "") .. "z' .. v .. '"<cr>')})
+nno <space><space> <cmd>call fold#lazy#compute()<bar>exe 'norm! ' .. (v:count ? v:count : '') .. 'za'<cr>
 
 " I think that we sometimes try to open a fold from visual mode by accident.
 " It leads to an unexpected visual selection; let's prevent this from happening.
-xno <silent> <space><space> <c-\><c-n>
+xno <space><space> <c-\><c-n>
 
 " Autocmds{{{1
 
