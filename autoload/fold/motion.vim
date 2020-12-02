@@ -47,12 +47,11 @@ fu fold#motion#rhs(lhs) abort "{{{2
     let [mode, cnt] = [mode(1), v:count1]
     " If we're in visual block mode, we can't pass `C-v` directly.{{{
     "
-    " It's going to by directly typed on the command-line.
-    " On the command-line, `C-v` means:
+    " Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
+    " command-line entered  with `:`. That  is, it's interpreted as  "insert the
+    " next character literally".
     "
-    "     “insert the next character literally”
-    "
-    " The solution is to double `C-v`.
+    " Solution: double `<C-v>`.
     "}}}
     if mode is# "\<c-v>"
         let mode = "\<c-v>\<c-v>"
@@ -85,7 +84,7 @@ fu fold#motion#rhs(lhs) abort "{{{2
     " In those cases, we should not interfere; it would be unexpected.
     "}}}
     return printf("%s%s\<cmd>call " .. "%s(%s, %s, %d)\<cr>",
-        \ mode =~# "^[vV\<c-v>]$" ? "\e" : '',
+        \ index(['v', 'V', "\<c-v>\<c-v>"], mode) >= 0 ? "\e" : '',
         \ mode is# 'no' ? 'V' : '',
         \ function('s:jump'),
         \ string(a:lhs),
@@ -129,7 +128,7 @@ fu s:jump(lhs, mode, cnt) abort "{{{2
     call s:winrestview(view)
 
     if a:mode =~# "^[vV\<c-v>]$"
-        exe 'norm! ' .. fixed_corner .. 'GV' .. line('.') .. 'G'
+        exe 'norm! ' .. fixed_corner .. 'G' .. a:mode .. line('.') .. 'G'
     endif
 endfu
 
