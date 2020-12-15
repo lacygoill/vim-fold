@@ -27,7 +27,7 @@
 " Now, press `I C-k C-k` to delete the rest of the line.
 " Again, it takes several seconds.
 "
-" It seems the issue is `markdown#fold#foldexpr#heading_depth()` which, for some
+" It seems the issue is `markdown#fold#foldexpr#headingDepth()` which, for some
 " reason, is called more than 180,000 times!
 "
 " I think  that every time  a character is inserted  or removed while  in insert
