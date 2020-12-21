@@ -6,25 +6,31 @@
 " MWE:
 "
 "     $ vim -Nu <(cat <<'EOF'
-"         setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
-"         fu Heading_depth(lnum)
-"             let nextline = getline(a:lnum+1)
-"             let level = getline(a:lnum)->matchstr('^#\{1,6}')->strlen()
-"             if !level
-"                 if nextline =~# '^=\+\s*$'
-"                     return '>1'
-"                 elseif nextline =~# '^-\+\s*$'
-"                     return '>2'
-"                 endif
+"         setl fdm=expr fde=MarkdownFold()
+"         fu MarkdownFold()
+"             let line = getline(v:lnum)
+"             if line =~ '^#\+ '
+"                 return '>' .. match(line, ' ')
 "             endif
-"             return level
+"             let nextline = getline(v:lnum + 1)
+"             if line =~ '^.\+$' && nextline =~ '^=\+$'
+"                 return '>1'
+"             endif
+"             if line =~ '^.\+$' && nextline =~ '^-\+$'
+"                 return '>2'
+"             endif
+"             return '='
 "         endfu
-"         ino <expr> <c-k><c-k> repeat('<del>', 300)
+"         ino <expr> <c-k> repeat('<del>', 300)
+"         sil e /tmp/md.md
+"         %d
+"         put='text'
+"         sil norm! yy300pG300Ax
 "     EOF
-"     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
+"     )
 "
 " Vim takes several seconds to start.
-" Now, press `I C-k C-k` to delete the rest of the line.
+" Now, press `I C-k` to delete the rest of the line.
 " Again, it takes several seconds.
 "
 " It seems the issue is `markdown#fold#foldexpr#headingDepth()` which, for some
@@ -39,7 +45,7 @@
 "
 " ---
 "
-" The main culprit is the value `'='` returned from `Heading_depth()`.
+" The main culprit is the value `'='` returned from `MarkdownFold()`.
 " If you replace it with `1`, the slowness disappears.
 "}}}
 "   Why can't I just use `>1` and `1` to fix this issue?{{{
@@ -54,7 +60,7 @@
 "     Ok, so how does `vim-fold` fix it?{{{
 "
 " It lets Vim create folds according to the value of `'fdm'` (e.g. `foldexpr` or
-" `syntax`), then  it resets  the latter  to manual, which  is much  less costly
+" `syntax`), then  it resets the latter  to `manual`, which is  much less costly
 " because  it doesn't  ask Vim  to recompute  anything every  time you  edit the
 " buffer.
 "
@@ -63,30 +69,6 @@
 "    > Switching to  the "manual" method  doesn't remove the existing  folds.  This
 "    > can be  used to first  define the folds  automatically and then  change them
 "    > manually.
-"
-" ---
-"
-" You can observe the positive effect from `vim-fold` like this:
-"
-"     $ vim -Nu <(cat <<'EOF'
-"         filetype on
-"         set rtp^=~/.vim/plugged/vim-fold rtp^=~/.vim/plugged/vim-markdown
-"         setl fdm=expr fde=Heading_depth(v:lnum)>0?'>1':'='
-"         fu Heading_depth(lnum)
-"             let level = getline(a:lnum)->matchstr('^#\{1,6}')->strlen()
-"             if !level
-"                 if getline(a:lnum+1) =~ '^=\+\s*$'
-"                     let level = 1
-"                 endif
-"             endif
-"             return level
-"         endfu
-"         ino <expr> <c-k><c-k> repeat('<del>', 300)
-"     EOF
-"     ) +"%d | put='text' | norm! yy300pG300Ax" /tmp/md.md
-"
-" Vim should  start up immediately, and  removing 300 characters with  `C-k C-k`
-" should also be instantaneous.
 "}}}
 
 " When won't the foldmethod be reset from a costly value to 'manual'?{{{
