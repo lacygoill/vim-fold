@@ -1,10 +1,15 @@
-fu fold#collapse_expand#hlm(cmd) abort
-    let cnt = v:count
-    if cnt && a:cmd isnot# 'M'
-        exe 'norm! ' .. cnt .. a:cmd
+vim9script noclear
+
+if exists('loaded') | finish | endif
+var loaded = true
+
+def fold#collapse_expand#hlm(key: string)
+    var cnt = v:count
+    if cnt != 0 && key != 'M'
+        exe 'norm! ' .. cnt .. key
     else
-        call fold#lazy#compute()
-        exe 'norm! ' .. {'H': 'zM', 'L': 'zR', 'M': 'zMzv'}[a:cmd] .. 'zz'
+        fold#lazy#compute()
+        exe 'norm! ' .. {H: 'zM', L: 'zR', M: 'zMzv'}[key] .. 'zz'
     endif
-endfu
+enddef
 
