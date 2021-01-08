@@ -1,3 +1,8 @@
+vim9 noclear
+
+if exists('loaded') | finish | endif
+var loaded = true
+
 def fold#comment#main(type = ''): string
     if type == ''
         &opfunc = 'fold#comment#main'

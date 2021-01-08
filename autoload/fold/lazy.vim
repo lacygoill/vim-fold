@@ -1,4 +1,4 @@
-vim9script noclear
+vim9 noclear
 
 if exists('loaded') | finish | endif
 var loaded = true
@@ -348,7 +348,7 @@ def fold#lazy#compute(noforce = true) #{{{2
         #}}}
         var was_visible = foldclosed('.') == -1
         &l:fdm = b:last_fdm
-        # Wait.  Aren't the folds recomputed only when the dummy assignment is executed?{{{
+        # Wait.  Aren't the folds recomputed only when `foldlevel(1)` is evaluated?{{{
         #
         # Any folding-related function causes folds to be recomputed.
         # So the  evaluation of the next  `foldclosed()` causes the folds  to be
@@ -408,9 +408,8 @@ def fold#lazy#compute(noforce = true) #{{{2
     endif
 
     # and now get back to 'manual'
-    # `:exe` because of a bug: https://github.com/vim/vim/issues/7620
-    exe 'b:last_fdm = &l:fdm'
-    # Why this dummy assignment?{{{
+    b:last_fdm = &l:fdm
+    # Why evaluate this function?{{{
     #
     # To make sure Vim recomputes folds, before we reset the foldmethod to manual.
     # Without, there is a risk that no fold would be created:
@@ -425,7 +424,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     #     " no fold is created;
     #     " but a fold would have been created if you had run:
     #
-    #         :setl fdm=expr | let _ = foldlevel(1) | setl fdm=manual
+    #         :setl fdm=expr | eval foldlevel(1) | setl fdm=manual
     #
     #      or
     #
@@ -447,9 +446,21 @@ def fold#lazy#compute(noforce = true) #{{{2
     # It does not preserve manually opened/closed folds.
     # Note that `winsaveview()` does not save fold information.
     #}}}
-    foldlevel(1)
+    EvalFoldlevel()
     setl fdm=manual
 enddef
+
+fu EvalFoldlevel() abort
+    " We need to be in the legacy context for this to work.{{{
+    "
+    " Indeed, if the option has been set in the legacy context, it might contain
+    " a binary operator  which is not surrounded by  whitespace (because whoever
+    " set the option didn't want to write  a backslash every time they needed to
+    " include a space).  But in Vim9 script, that's an error.
+    " See: https://github.com/vim/vim/issues/7625#issuecomment-755268156
+    "}}}
+    eval foldlevel(1)
+endfu
 
 def fold#lazy#handleDiff() #{{{2
     var enter_diff_mode = v:option_new == '1' && v:option_old == '0'
@@ -459,7 +470,7 @@ def fold#lazy#handleDiff() #{{{2
         b:prediff_fdm = b:last_fdm
     elseif leave_diff_mode && exists('b:prediff_fdm')
         &l:fdm = b:prediff_fdm
-        foldlevel(1)
+        EvalFoldlevel()
         unlet! b:prediff_fdm
     endif
 enddef

@@ -1,3 +1,8 @@
+vim9 noclear
+
+if exists('loaded') | finish | endif
+var loaded = true
+
 import InTerminalBuffer from 'lg.vim'
 
 def fold#adhoc#main() #{{{1
