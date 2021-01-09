@@ -78,7 +78,7 @@ def fold#motion#rhs(lhs: string): string #{{{2
     #
     # Because in that mode, usually, we want to operate on whole lines.
     #}}}
-    #   Why not `mode =~# 'o'` instead of `mode is# 'no'`?{{{
+    #   Why not `mode =~ 'o'` instead of `mode == 'no'`?{{{
     #
     # We don't want to force the motion to be linewise unconditionally.
     # E.g., we could have manually forced it to be characterwise or blockwise.
