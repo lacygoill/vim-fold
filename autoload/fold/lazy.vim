@@ -219,7 +219,7 @@ def fold#lazy#computeWindows() #{{{2
     var curbuf = bufnr('%')
     var winids = getwininfo()
         ->filter((_, v) => v.bufnr == curbuf)
-        ->map((_, v) => v.winid)
+        ->mapnew((_, v) => v.winid)
     # When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
     #
     # Replace the next line with this block:
@@ -227,7 +227,7 @@ def fold#lazy#computeWindows() #{{{2
     #     var curlnum = line('.')
     #     var was_visible = foldclosed('.') == -1
     #     mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
-    #     map(winids, (_, v) => win_execute(v,
+    #     mapnew(winids, (_, v) => win_execute(v,
     #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') != -1
     #             ? "norm! ' .. curlnum .. 'Gzv"
     #             : ""'
@@ -249,7 +249,7 @@ def fold#lazy#computeWindows() #{{{2
     # you can't  say that its state  has not been  preserved; it did not  have a
     # state to begin with.
     #}}}
-    map(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
+    mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
 enddef
 
 def fold#lazy#compute(noforce = true) #{{{2

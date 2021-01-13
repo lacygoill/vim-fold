@@ -139,7 +139,7 @@ enddef
 def NextFold(lhs: string)
     var orig = line('.')
 
-    var next = []
+    var next: list<number> = []
     if lhs == '[z'
 
         keepj norm! [z
