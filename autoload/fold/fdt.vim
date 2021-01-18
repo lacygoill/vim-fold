@@ -4,7 +4,7 @@ if exists('loaded') | finish | endif
 var loaded = true
 
 def fold#fdt#get(): string #{{{1
-    var foldstartline = getline(v:foldstart)
+    var foldstartline: string = getline(v:foldstart)
     var indent: string
     var level: number
     # get the desired level of indentation for the title
@@ -38,7 +38,7 @@ def fold#fdt#get(): string #{{{1
     # This  can be  useful to  prevent  the title  from being  highlighted as  a
     # codeblock.
     #}}}
-    var pat = '^\s*' .. cml_left .. '[  \t]\='
+    var pat: string = '^\s*' .. cml_left .. '[  \t]\='
     # remove fold markers
     if cml_right == '\V\m'
         pat ..= '\|\s*\%(' .. cml_left .. '\)\=\s*{{\%x7b\d*\s*$'
@@ -50,7 +50,7 @@ def fold#fdt#get(): string #{{{1
     # visible in a fold title, so backticks are just noise; remove them
     pat ..= '\|`'
 
-    var title = substitute(foldstartline, pat, '', 'g')
+    var title: string = substitute(foldstartline, pat, '', 'g')
 
     # remove filetype specific noise
     if get(b:, 'title_like_in_markdown', false)
@@ -71,8 +71,9 @@ def fold#fdt#get(): string #{{{1
     endif
 
     if get(b:, 'foldtitle_full', false)
-        var foldsize = (v:foldend - v:foldstart)
-        var linecount = '[' .. foldsize .. ']' .. repeat(' ', 4 - strlen(foldsize))
+        var foldsize: number = (v:foldend - v:foldstart)
+        var linecount: string = '[' .. foldsize .. ']'
+            .. repeat(' ', 4 - strlen(foldsize))
         return indent .. (foldsize > 1 ? linecount : '') .. title
     else
         return indent .. title

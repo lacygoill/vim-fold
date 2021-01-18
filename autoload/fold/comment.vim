@@ -10,7 +10,7 @@ def fold#comment#main(type = ''): string
     endif
     sil exe "norm! V\<cmd>call comment#object#main()\r"
     exe "norm! \e"
-    var cml = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')
+    var cml: string = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')
         ->escape('\') .. '\m'
     if getline("'>") !~ '^\s*' .. cml .. '\s*$'
         exe "norm! o\e"

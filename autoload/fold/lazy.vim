@@ -13,11 +13,11 @@ var loaded = true
 #     $ vim -Nu <(cat <<'EOF'
 #         setl fdm=expr fde=MarkdownFold()
 #         def MarkdownFold(): any
-#             var line = getline(v:lnum)
+#             var line: string = getline(v:lnum)
 #             if line =~ '^#\+ '
 #                 return '>' .. match(line, ' ')
 #             endif
-#             var nextline = getline(v:lnum + 1)
+#             var nextline: string = getline(v:lnum + 1)
 #             if line =~ '^.\+$' && nextline =~ '^=\+$'
 #                 return '>1'
 #             endif
@@ -106,8 +106,8 @@ var loaded = true
 # Solution: on `VimEnter` invoke `fold#lazy#compute()` in *all* windows
 # (*in addition to installing the autocmds*):
 #
-#     var winids = getwininfo()->map((_, v) => v.winid)
-#     map(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
+#     var winids: list<number> = getwininfo()->mapnew((_, v) => v.winid)
+#     mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
 #
 # See:
 # https://github.com/Konfekt/FastFold/issues/30
@@ -130,7 +130,7 @@ var loaded = true
 #
 # Initialize some constant:
 #
-#     const MIN_LINES = 30
+#     const MIN_LINES: number = 30
 #
 # Write this function:
 #
@@ -216,16 +216,16 @@ var loaded = true
 # Interface{{{1
 def fold#lazy#computeWindows() #{{{2
     # compute folds in each window displaying the current buffer; not just the current window
-    var curbuf = bufnr('%')
-    var winids = getwininfo()
+    var curbuf: number = bufnr('%')
+    var winids: list<number> = getwininfo()
         ->filter((_, v) => v.bufnr == curbuf)
         ->mapnew((_, v) => v.winid)
     # When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
     #
     # Replace the next line with this block:
     #
-    #     var curlnum = line('.')
-    #     var was_visible = foldclosed('.') == -1
+    #     var curlnum: number = line('.')
+    #     var was_visible: bool = foldclosed('.') == -1
     #     mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
     #     mapnew(winids, (_, v) => win_execute(v,
     #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') != -1
@@ -346,7 +346,7 @@ def fold#lazy#compute(noforce = true) #{{{2
         #    - modify the buffer so that the expr method detects a *new* fold
         #    - switch from manual to expr
         #}}}
-        var was_visible = foldclosed('.') == -1
+        var was_visible: bool = foldclosed('.') == -1
         &l:fdm = b:last_fdm
         # Wait.  Aren't the folds recomputed only when `foldlevel(1)` is evaluated?{{{
         #
@@ -463,8 +463,8 @@ fu EvalFoldlevel() abort
 endfu
 
 def fold#lazy#handleDiff() #{{{2
-    var enter_diff_mode = v:option_new == '1' && v:option_old == '0'
-    var leave_diff_mode = v:option_new == '0' && v:option_old == '1'
+    var enter_diff_mode: bool = v:option_new == '1' && v:option_old == '0'
+    var leave_diff_mode: bool = v:option_new == '0' && v:option_old == '1'
 
     if enter_diff_mode && exists('b:last_fdm')
         b:prediff_fdm = b:last_fdm
@@ -481,7 +481,7 @@ def ShouldSkip(): bool #{{{2
 enddef
 
 def IsCostly(): bool #{{{2
-    var pat = '^\%(expr\|indent\|syntax\)$'
+    var pat: string = '^\%(expr\|indent\|syntax\)$'
     return (exists('b:last_fdm') && b:last_fdm =~ pat) || &l:fdm =~ pat
 enddef
 

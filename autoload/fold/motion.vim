@@ -31,12 +31,12 @@ var loaded = true
 # (open vs closed).
 # Warning: When set, the motions may be slow in files with a lot of folds.
 # If that's an issue, adjust `BIG_FILE`.
-const PRESERVE_FOLD_STATE = 1
+const PRESERVE_FOLD_STATE: number = 1
 
 # Saving/restoring the  state of all the  folds takes time; the  more folds, the
 # longer it takes  (e.g. vimrc); as a  workaround, we bite the  bullet and never
 # preserve the state of the folds in big files.
-const BIG_FILE = 1000
+const BIG_FILE: number = 1'000
 
 # Interface {{{1
 def fold#motion#rhs(lhs: string): string #{{{2
@@ -44,8 +44,8 @@ def fold#motion#rhs(lhs: string): string #{{{2
         return ''
     endif
 
-    var mode = mode(1)
-    var cnt = v:count1
+    var mode: string = mode(1)
+    var cnt: number = v:count1
     # If we're in visual block mode, we can't pass `C-v` directly.{{{
     #
     # Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
@@ -111,7 +111,7 @@ def Jump(lhs: string, mode: string, cnt: number) #{{{2
         fixed_corner = line('.') == line("'<") ? line("'>") : line("'<")
     endif
 
-    var view = winsaveview()
+    var view: dict<number> = winsaveview()
     if PRESERVE_FOLD_STATE && line('$') <= BIG_FILE
         Foldsavestate()
     endif
@@ -137,7 +137,7 @@ def Jump(lhs: string, mode: string, cnt: number) #{{{2
 enddef
 
 def NextFold(lhs: string)
-    var orig = line('.')
+    var orig: number = line('.')
 
     var next: list<number> = []
     if lhs == '[z'
@@ -153,10 +153,10 @@ def NextFold(lhs: string)
         endif
         keepj exe ':' .. max(next)
 
-        var is_fold_start = IsFoldStart()
-        var is_fold_end = IsFoldEnd()
-        var is_next_line_foldable = (line('.') + 1)->foldlevel() > 0
-        var moved_just_above = line('.') == orig - 1
+        var is_fold_start: bool = IsFoldStart()
+        var is_fold_end: bool = IsFoldEnd()
+        var is_next_line_foldable: bool = (line('.') + 1)->foldlevel() > 0
+        var moved_just_above: bool = line('.') == orig - 1
 
         # FIXME: Doesn't always work as expected.{{{
         #
@@ -209,11 +209,12 @@ def NextFold(lhs: string)
         endif
         keepj exe ':' .. min(next)
 
-        var is_fold_start = IsFoldStart()
-        var is_fold_end = IsFoldEnd()
-        var is_previous_line_foldable = (line('.') - 1)->foldlevel() > 0
-        var has_end_marker = &l:fdm == 'marker' && getline('.') =~ split(&l:fmr, ',')[1] .. '\d*\s*$'
-        var moved_just_below = line('.') == orig + 1
+        var is_fold_start: bool = IsFoldStart()
+        var is_fold_end: bool = IsFoldEnd()
+        var is_previous_line_foldable: bool = (line('.') - 1)->foldlevel() > 0
+        var has_end_marker: bool = &l:fdm == 'marker'
+            && getline('.') =~ split(&l:fmr, ',')[1] .. '\d*\s*$'
+        var moved_just_below: bool = line('.') == orig + 1
 
         # special case: if we're before the *first* fold, jump right before its start (instead of its end)
         if is_fold_start && !is_previous_line_foldable && !moved_just_below
@@ -240,7 +241,7 @@ def IsFoldStart(): bool
     endif
 
     norm! zc
-    var is_fold_start = line('.') == foldclosed('.')
+    var is_fold_start: bool = line('.') == foldclosed('.')
     norm! zo
 
     return is_fold_start
@@ -252,14 +253,14 @@ def IsFoldEnd(): bool
     endif
 
     norm! zc
-    var is_fold_end = line('.') == foldclosedend('.')
+    var is_fold_end: bool = line('.') == foldclosedend('.')
     norm! zo
 
     return is_fold_end
 enddef
 
 def Foldsavestate()
-    var pos = getcurpos()
+    var pos: list<number> = getcurpos()
     state = {open: [], closed: []}
     folddoclosed state.closed += GetState('closed')
     folddoopen state.open += GetState('open')
@@ -286,7 +287,7 @@ def GetState(which_one: string): list<number>
 enddef
 
 def Foldreststate(state: dict<list<number>>)
-    var pos = getcurpos()
+    var pos: list<number> = getcurpos()
     for lnum in state.open
         exe 'norm! ' .. lnum .. 'Gzo'
     endfor
@@ -297,7 +298,7 @@ def Foldreststate(state: dict<list<number>>)
 enddef
 
 def Winrestview(view: dict<number>)
-    var pos = getcurpos()
+    var pos: list<number> = getcurpos()
     winrestview(view)
     setpos('.', pos)
 enddef
