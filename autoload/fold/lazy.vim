@@ -228,7 +228,7 @@ def fold#lazy#computeWindows() #{{{2
     #     var was_visible: bool = foldclosed('.') == -1
     #     mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
     #     mapnew(winids, (_, v) => win_execute(v,
-    #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') != -1
+    #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
     #             ? "norm! ' .. curlnum .. 'Gzv"
     #             : ""'
     #         ))
@@ -331,7 +331,7 @@ def fold#lazy#compute(noforce = true) #{{{2
         # MWE:
         #
         #     $ vim -Nu NONE -S <(cat <<'EOF'
-        #         setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
+        #         setl fml=0 fdm=manual fde=getline(v:lnum)=~'^#'?'>1':'='
         #         au BufWritePost * setl fdm=expr | eval foldlevel(1) | setl fdm=manual
         #         %d|sil pu=repeat(['x'], 5)|1
         #     EOF
@@ -355,7 +355,7 @@ def fold#lazy#compute(noforce = true) #{{{2
         # recomputed  immediately (to  be  accurate, they  are recomputed  right
         # before computing the fold level of the current line).
         #}}}
-        if was_visible && foldclosed('.') != -1
+        if was_visible && foldclosed('.') >= 0
             # Do *not* move `norm! zv` in `#compute_windows()`.{{{
             #
             # The latter is only invoked on certain events:
@@ -415,7 +415,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     # Without, there is a risk that no fold would be created:
     #
     #     $ vim -Nu NONE -S <(cat <<'EOF'
-    #         setl fml=0 fdm=manual fde=getline(v:lnum)=~#'^#'?'>1':'='
+    #         setl fml=0 fdm=manual fde=getline(v:lnum)=~'^#'?'>1':'='
     #         %d|pu=repeat(['x'], 5)|1
     #     EOF
     #     ) /tmp/file
