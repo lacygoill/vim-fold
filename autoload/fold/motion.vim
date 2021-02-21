@@ -147,7 +147,7 @@ def NextFold(lhs: string)
         keepj exe ':' .. orig
         keepj norm! zk
         next += [line('.')]
-        filter(next, (_, v) => v != orig)
+        filter(next, (_, v: number): bool => v != orig)
         if empty(next)
             return
         endif
@@ -203,7 +203,7 @@ def NextFold(lhs: string)
         keepj exe ':' .. orig
         keepj norm! zj
         next += [line('.')]
-        filter(next, (_, v) => v != orig)
+        filter(next, (_, v: number): bool => v != orig)
         if empty(next)
             return
         endif

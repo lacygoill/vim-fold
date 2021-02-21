@@ -28,7 +28,7 @@ noremap <expr><unique> [z fold#motion#rhs('[z')
 noremap <expr><unique> ]z fold#motion#rhs(']z')
 
 map(['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x'],
-    (_, v) => execute('nno z' .. v
+    (_, v: string) => execute('nno z' .. v
     .. ' <cmd>call fold#lazy#compute()<bar>exe "norm! " .. (v:count ? v:count : "") .. "z' .. v .. '"<cr>'))
 nno <space><space> <cmd>call fold#lazy#compute()<bar>exe 'norm! ' .. (v:count ? v:count : '') .. 'za'<cr>
 

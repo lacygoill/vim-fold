@@ -106,8 +106,8 @@ var loaded = true
 # Solution: on `VimEnter` invoke `fold#lazy#compute()` in *all* windows
 # (*in addition to installing the autocmds*):
 #
-#     var winids: list<number> = getwininfo()->mapnew((_, v) => v.winid)
-#     mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
+#     var winids: list<number> = getwininfo()->mapnew((_, v: dict<any>): number => v.winid)
+#     mapnew(winids, (_, v: number) => win_execute(v, 'fold#lazy#compute(false)'))
 #
 # See:
 # https://github.com/Konfekt/FastFold/issues/30
@@ -218,16 +218,16 @@ def fold#lazy#computeWindows() #{{{2
     # compute folds in each window displaying the current buffer; not just the current window
     var curbuf: number = bufnr('%')
     var winids: list<number> = getwininfo()
-        ->filter((_, v) => v.bufnr == curbuf)
-        ->mapnew((_, v) => v.winid)
+        ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
+        ->mapnew((_, v: dict<any>): number => v.winid)
     # When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
     #
     # Replace the next line with this block:
     #
     #     var curlnum: number = line('.')
     #     var was_visible: bool = foldclosed('.') == -1
-    #     mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
-    #     mapnew(winids, (_, v) => win_execute(v,
+    #     mapnew(winids, (_, v: number) => win_execute(v, 'fold#lazy#compute(false)'))
+    #     mapnew(winids, (_, v: number) => win_execute(v,
     #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
     #             ? "norm! ' .. curlnum .. 'Gzv"
     #             : ""'
@@ -249,7 +249,7 @@ def fold#lazy#computeWindows() #{{{2
     # you can't  say that its state  has not been  preserved; it did not  have a
     # state to begin with.
     #}}}
-    mapnew(winids, (_, v) => win_execute(v, 'fold#lazy#compute(false)'))
+    mapnew(winids, (_, v: number) => win_execute(v, 'fold#lazy#compute(false)'))
 enddef
 
 def fold#lazy#compute(noforce = true) #{{{2
