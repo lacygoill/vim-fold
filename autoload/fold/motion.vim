@@ -44,7 +44,7 @@ def fold#motion#rhs(lhs: string): string #{{{2
         return ''
     endif
 
-    var mode: string = mode(1)
+    var mode: string = mode(true)
     var cnt: number = v:count1
     # If we're in visual block mode, we can't pass `C-v` directly.{{{
     #
@@ -124,7 +124,7 @@ def Jump(lhs: string, mode: string, cnt: number) #{{{2
     if PRESERVE_FOLD_STATE
         && line('$') <= BIG_FILE
         && maparg('j', 'n', 0, 1)->get('rhs', '') !~ 'move_and_open_fold'
-        Foldreststate(state)
+        Foldreststate()
     else
         norm! zM
     endif
@@ -139,7 +139,7 @@ enddef
 def NextFold(lhs: string)
     var orig: number = line('.')
 
-    var next: list<number> = []
+    var next: list<number>
     if lhs == '[z'
 
         keepj norm! [z
@@ -286,7 +286,7 @@ def GetState(which_one: string): list<number>
     return []
 enddef
 
-def Foldreststate(state: dict<list<number>>)
+def Foldreststate()
     var pos: list<number> = getcurpos()
     for lnum in state.open
         exe 'norm! ' .. lnum .. 'Gzo'
