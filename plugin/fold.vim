@@ -5,9 +5,9 @@ var loaded = true
 
 # Mappings {{{1
 
-nno H <cmd>call fold#collapse_expand#hlm('H')<cr>
-nno L <cmd>call fold#collapse_expand#hlm('L')<cr>
-nno M <cmd>call fold#collapse_expand#hlm('M')<cr>
+nno H <cmd>call fold#collapseExpand#hlm('H')<cr>
+nno L <cmd>call fold#collapseExpand#hlm('L')<cr>
+nno M <cmd>call fold#collapseExpand#hlm('M')<cr>
 
 # Purpose: automatically add an empty line at the end of a multi-line comment so
 # that the end marker of the fold is on a dedicated line.
