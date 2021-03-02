@@ -106,8 +106,8 @@ var loaded = true
 # Solution: on `VimEnter` invoke `fold#lazy#compute()` in *all* windows
 # (*in addition to installing the autocmds*):
 #
-#     var winids: list<number> = getwininfo()->mapnew((_, v: dict<any>): number => v.winid)
-#     mapnew(winids, (_, v: number) => win_execute(v, 'fold#lazy#compute(false)'))
+#     getwininfo()
+#         ->mapnew((_, v: dict<any>) => win_execute(v.winid, 'fold#lazy#compute(false)'))
 #
 # See:
 # https://github.com/Konfekt/FastFold/issues/30
@@ -217,39 +217,41 @@ var loaded = true
 def fold#lazy#computeWindows() #{{{2
     # compute folds in each window displaying the current buffer; not just the current window
     var curbuf: number = bufnr('%')
-    var winids: list<number> = getwininfo()
+    getwininfo()
         ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
-        ->mapnew((_, v: dict<any>): number => v.winid)
-    # When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
-    #
-    # Replace the next line with this block:
-    #
-    #     var curlnum: number = line('.')
-    #     var was_visible: bool = foldclosed('.') == -1
-    #     mapnew(winids, (_, v: number) => win_execute(v, 'fold#lazy#compute(false)'))
-    #     mapnew(winids, (_, v: number) => win_execute(v,
-    #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
-    #             ? "norm! ' .. curlnum .. 'Gzv"
-    #             : ""'
-    #         ))
-    #
-    # The issue is due to the fact  that the current line in inactive windows is
-    # not synchronized with the current line in the active window.
-    #
-    # ---
-    #
-    # I don't  try to fix this  "issue" because it  adds too much code  for what
-    # seems to be  an edge case.
-    #
-    # Note that the previous block could  change the current line of an inactive
-    # window; you may want to preserve it.
-    #
-    # Besides, whether  it's an  issue is  debatable.  I mean  the fold  did not
-    # exist in  an inactive window, so  when Vim closes it  automatically there,
-    # you can't  say that its state  has not been  preserved; it did not  have a
-    # state to begin with.
-    #}}}
-    mapnew(winids, (_, v: number) => win_execute(v, 'fold#lazy#compute(false)'))
+        # When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
+        #
+        # Use this block instead:
+        #
+        #     var curlnum: number = line('.')
+        #     var was_visible: bool = foldclosed('.') == -1
+        #     var curbuf: number = bufnr('%')
+        #     getwininfo()
+        #         ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
+        #         ->mapnew((_, v: number) => win_execute(v, [
+        #             'fold#lazy#compute(false)',
+        #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
+        #                 ? "norm! ' .. curlnum .. 'Gzv"
+        #                 : ""'
+        #             ]))
+        #
+        # The issue is due to the fact that the current line in inactive windows
+        # is not synchronized with the current line in the active window.
+        #
+        # ---
+        #
+        # I don't try to fix this "issue" because it adds too much code for what
+        # seems to be an edge case.
+        #
+        # Note  that the  previous block  could change  the current  line of  an
+        # inactive window; you may want to preserve it.
+        #
+        # Besides, whether it's an issue is  debatable.  I mean the fold did not
+        # exist  in an  inactive window,  so  when Vim  closes it  automatically
+        # there, you can't say that its state has not been preserved; it did not
+        # have a state to begin with.
+        #}}}
+        ->mapnew((_, v: dict<any>) => win_execute(v.winid, 'fold#lazy#compute(false)'))
 enddef
 
 def fold#lazy#compute(noforce = true) #{{{2

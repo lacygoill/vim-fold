@@ -50,13 +50,13 @@ def fold#fdt#get(): string #{{{1
     # visible in a fold title, so backticks are just noise; remove them
     pat ..= '\|`'
 
-    var title: string = substitute(foldstartline, pat, '', 'g')
+    var title: string = foldstartline->substitute(pat, '', 'g')
 
     # remove filetype specific noise
     if get(b:, 'title_like_in_markdown', false)
-        title = substitute(foldstartline, '^[-=#]\+\s*', '', '')
+        title = foldstartline->substitute('^[-=#]\+\s*', '', '')
     elseif &ft == 'sh' || &ft == 'zsh'
-        title = substitute(title, '^.*\zs()\s*\%({\|(\)', '', '')
+        title = title->substitute('^.*\zs()\s*\%({\|(\)', '', '')
     elseif &ft == 'vim'
         pat = '^\s*\%(fu\%[nction]\|\%(export\s\+\)\=def\)!\='
             # ignore `aaa#bbb#` in `aaa#bbb#func()`, and ignore `s:` in `s:func()`
@@ -65,9 +65,9 @@ def fold#fdt#get(): string #{{{1
             .. '\(.\{-}\)'
             # but not the function arguments
             .. '(.*'
-        title = substitute(title, pat, '\1', '')
+        title = title->substitute(pat, '\1', '')
     elseif &ft == 'python'
-        title = substitute(title, '^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
+        title = title->substitute('^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
     endif
 
     if get(b:, 'foldtitle_full', false)

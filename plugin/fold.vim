@@ -27,9 +27,10 @@ nno <unique> za <cmd>call fold#adhoc#main()<cr>
 noremap <expr><unique> [z fold#motion#rhs('[z')
 noremap <expr><unique> ]z fold#motion#rhs(']z')
 
-map(['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x'],
-    (_, v: string) => execute('nno z' .. v
-    .. ' <cmd>call fold#lazy#compute()<bar>exe "norm! " .. (v:count ? v:count : "") .. "z' .. v .. '"<cr>'))
+['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x']
+    ->map((_, v: string) => execute(
+            'nno z' .. v
+            .. ' <cmd>call fold#lazy#compute()<bar>exe "norm! " .. (v:count ? v:count : "") .. "z' .. v .. '"<cr>'))
 nno <space><space> <cmd>call fold#lazy#compute()<bar>exe 'norm! ' .. (v:count ? v:count : '') .. 'za'<cr>
 
 # I think that we sometimes try to open a fold from visual mode by accident.
