@@ -94,7 +94,11 @@ def fold#motion#rhs(lhs: string): string #{{{2
 enddef
 #}}}1
 # Core {{{1
-def Jump(lhs: string, mode: string, cnt: number) #{{{2
+def Jump( #{{{2
+    lhs: string,
+    mode: string,
+    cnt: number
+)
     # recompute folds to make sure they are up-to-date
     fold#lazy#compute()
 
