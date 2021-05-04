@@ -14,19 +14,19 @@ def fold#fdt#get(): string #{{{1
     else
         indent = foldstartline =~ '{{\%x7b\d\+\s*$'
             ?     repeat(' ', (v:foldlevel - 1) * 3)
-            :     matchstr(foldstartline, '^\s*')
+            :     foldstartline->matchstr('^\s*')
     endif
 
     # If you don't care about html and css, you could probably simplify the code
     # of this function, and get rid of `cml_right`.
     var cml_left: string
     var cml_right: string
-    if &ft == 'vim'
+    if &filetype == 'vim'
         cml_left = '["#]'
         cml_right = '\V\m'
     else
-        cml_left = '\V' .. matchstr(&l:cms, '\S*\ze\s*%s')->escape('\') .. '\m'
-        cml_right = '\V' .. matchstr(&l:cms, '.*%s\s*\zs.*')->escape('\') .. '\m'
+        cml_left = '\V' .. &cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+        cml_right = '\V' .. &cms->matchstr('.*%s\s*\zs.*')->escape('\') .. '\m'
     endif
 
     # remove comment leader
@@ -55,9 +55,9 @@ def fold#fdt#get(): string #{{{1
     # remove filetype specific noise
     if get(b:, 'title_like_in_markdown', false)
         title = foldstartline->substitute('^[-=#]\+\s*', '', '')
-    elseif &ft == 'sh' || &ft == 'zsh'
+    elseif &filetype == 'sh' || &filetype == 'zsh'
         title = title->substitute('^.*\zs()\s*\%({\|(\)', '', '')
-    elseif &ft == 'vim'
+    elseif &filetype == 'vim'
         pat = '^\s*\%(fu\%[nction]\|\%(export\s\+\)\=def\)!\='
             # ignore `aaa#bbb#` in `aaa#bbb#func()`, and ignore `s:` in `s:func()`
             .. ' \%(.*\%(#\|s:\)\)\='
@@ -66,7 +66,7 @@ def fold#fdt#get(): string #{{{1
             # but not the function arguments
             .. '(.*'
         title = title->substitute(pat, '\1', '')
-    elseif &ft == 'python'
+    elseif &filetype == 'python'
         title = title->substitute('^def\s\+\|(.\{-})\%(^def\s\+.*\)\@<=:', '', 'g')
     endif
 

@@ -148,14 +148,14 @@ def NextFold(lhs: string)
 
         keepj norm! [z
         next += [line('.')]
-        keepj exe ':' .. orig
+        cursor(orig, 1)
         keepj norm! zk
         next += [line('.')]
         next->filter((_, v: number): bool => v != orig)
         if empty(next)
             return
         endif
-        keepj exe ':' .. max(next)
+        cursor(max(next), 1)
 
         var is_fold_start: bool = IsFoldStart()
         var is_fold_end: bool = IsFoldEnd()
@@ -204,14 +204,14 @@ def NextFold(lhs: string)
 
         keepj norm! ]z
         next += [line('.')]
-        keepj exe ':' .. orig
+        cursor(orig, 1)
         keepj norm! zj
         next += [line('.')]
         next->filter((_, v: number): bool => v != orig)
         if empty(next)
             return
         endif
-        keepj exe ':' .. min(next)
+        cursor(min(next), 1)
 
         var is_fold_start: bool = IsFoldStart()
         var is_fold_end: bool = IsFoldEnd()

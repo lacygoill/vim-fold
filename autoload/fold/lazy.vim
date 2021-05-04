@@ -140,7 +140,7 @@ var loaded = true
 #
 # And update `ShouldSkip()` to include it:
 #
-#     return IsSmall() || !IsCostly() || !empty(&bt) || !&l:ma
+#     return IsSmall() || !IsCostly() || !empty(&buftype) || !&l:ma
 #            ^-------^
 #}}}
 #   Which pitfalls should I be aware of?{{{
@@ -448,21 +448,17 @@ def fold#lazy#compute(noforce = true) #{{{2
     # It does not preserve manually opened/closed folds.
     # Note that `winsaveview()` does not save fold information.
     #}}}
-    EvalFoldlevel()
+    #   Why with the legacy syntax?{{{
+    #
+    # If 'foldexpr' has been set in a legacy script/function, it might contain a
+    # binary operator which is not surrounded by whitespace (because whoever set
+    # the option  didn't want  to write  a backslash every  time they  needed to
+    # include a space).  But in Vim9 script, that's an error.
+    # See: https://github.com/vim/vim/issues/7625#issuecomment-755268156
+    #}}}
+    legacy eval foldlevel(1)
     setl fdm=manual
 enddef
-
-fu EvalFoldlevel() abort
-    " We need to be in the legacy context for this to work.{{{
-    "
-    " Indeed, if the option has been set in the legacy context, it might contain
-    " a binary operator  which is not surrounded by  whitespace (because whoever
-    " set the option didn't want to write  a backslash every time they needed to
-    " include a space).  But in Vim9 script, that's an error.
-    " See: https://github.com/vim/vim/issues/7625#issuecomment-755268156
-    "}}}
-    eval foldlevel(1)
-endfu
 
 def fold#lazy#handleDiff() #{{{2
     var enter_diff_mode: bool = v:option_new == '1' && v:option_old == '0'
@@ -472,14 +468,16 @@ def fold#lazy#handleDiff() #{{{2
         b:prediff_fdm = b:last_fdm
     elseif leave_diff_mode && exists('b:prediff_fdm')
         &l:fdm = b:prediff_fdm
-        EvalFoldlevel()
+        # with legacy syntax  to suppress errors in case binary  operator is not
+        # surrounded by whitespace
+        legacy eval foldlevel(1)
         unlet! b:prediff_fdm
     endif
 enddef
 #}}}1
 # Utilities {{{1
 def ShouldSkip(): bool #{{{2
-    return !IsCostly() || !empty(&bt) || !&l:ma
+    return !IsCostly() || !empty(&buftype) || !&l:ma
 enddef
 
 def IsCostly(): bool #{{{2
