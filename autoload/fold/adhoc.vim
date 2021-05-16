@@ -39,6 +39,9 @@ def AddMarkers() #{{{2
 enddef
 
 def AddEmptyFold(pat: string) #{{{2
+    if search(pat, 'n') == 0
+        return
+    endif
     exe 'sil keepj keepp :1/^' .. pat .. '\s/- put _'
     sil keepj keepp s/^/#/
 enddef
