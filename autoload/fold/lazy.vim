@@ -263,7 +263,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     #     :tabnew
     #     :e /tmp/md2.md
     #     :echo &l:fdm
-    #     expr~
+    #     expr˜
     #     " it should be 'manual'
     #
     # That's because the window in the new  tab page has copied the local values
