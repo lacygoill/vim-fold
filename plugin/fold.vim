@@ -46,11 +46,11 @@ augroup LazyFold | au!
 
     # restore folds after a diff{{{
     #
-    # Here's what happens to `'fdm'` when we diff a file which is folded with an expr:
+    # Here's what happens to `'foldmethod'` when we diff a file which is folded with an expr:
     #
-    #    1. fdm=expr (set by filetype plugin)
-    #    2. fdm=manual (reset by vim-fold)
-    #    3. fdm=diff (reset again when we diff the file)
+    #    1. foldmethod=expr (set by filetype plugin)
+    #    2. foldmethod=manual (reset by vim-fold)
+    #    3. foldmethod=diff (reset again when we diff the file)
     #
     # When we stop  the diff with `:diffoff`, Vim  automatically resets `'diff'`
     # to `manual`, because:

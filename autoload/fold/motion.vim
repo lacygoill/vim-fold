@@ -40,7 +40,7 @@ const BIG_FILE: number = 1'000
 
 # Interface {{{1
 def fold#motion#rhs(lhs: string): string #{{{2
-    if &l:fdm == 'manual' && !exists('b:last_fdm')
+    if &l:foldmethod == 'manual' && !exists('b:last_foldmethod')
         return ''
     endif
 
@@ -127,7 +127,7 @@ def Jump( #{{{2
 
     if PRESERVE_FOLD_STATE
         && line('$') <= BIG_FILE
-        && maparg('j', 'n', 0, 1)->get('rhs', '') !~ 'move_and_open_fold'
+        && maparg('j', 'n', false, true)->get('rhs', '') !~ 'move_and_open_fold'
         Foldreststate()
     else
         norm! zM
@@ -164,7 +164,7 @@ def NextFold(lhs: string)
 
         # FIXME: Doesn't always work as expected.{{{
         #
-        #     $ vim --cmd 'let g:rust_fold=2 | setl ft=rust fdc=5' +'norm! GzR' <(curl -Ls https://raw.githubusercontent.com/BurntSushi/ripgrep/cb0dfda936748a7ca7a2d52d8b033bc48382d5f9/build.rs)
+        #     $ vim --cmd 'let g:rust_fold=2 | setl filetype=rust foldcolumn=5' +'norm! GzR' <(curl -Ls https://raw.githubusercontent.com/BurntSushi/ripgrep/cb0dfda936748a7ca7a2d52d8b033bc48382d5f9/build.rs)
         #     " press [z 7 times
         #     " the 7th time, we jump from 166 to 157
         #     " we should have jumped from 166 to 163 (then 162, then 157)
@@ -216,8 +216,8 @@ def NextFold(lhs: string)
         var is_fold_start: bool = IsFoldStart()
         var is_fold_end: bool = IsFoldEnd()
         var is_previous_line_foldable: bool = (line('.') - 1)->foldlevel() > 0
-        var has_end_marker: bool = &l:fdm == 'marker'
-            && getline('.') =~ split(&l:fmr, ',')[1] .. '\d*\s*$'
+        var has_end_marker: bool = &l:foldmethod == 'marker'
+            && getline('.') =~ split(&l:foldmarker, ',')[1] .. '\d*\s*$'
         var moved_just_below: bool = line('.') == orig + 1
 
         # special case: if we're before the *first* fold, jump right before its start (instead of its end)

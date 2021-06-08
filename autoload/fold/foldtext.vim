@@ -3,7 +3,7 @@ vim9script noclear
 if exists('loaded') | finish | endif
 var loaded = true
 
-def fold#fdt#get(): string #{{{1
+def fold#foldtext#get(): string #{{{1
     var foldstartline: string = getline(v:foldstart)
     var indent: string
     var level: number
@@ -25,8 +25,8 @@ def fold#fdt#get(): string #{{{1
         cml_left = '["#]'
         cml_right = '\V\m'
     else
-        cml_left = '\V' .. &cms->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
-        cml_right = '\V' .. &cms->matchstr('.*%s\s*\zs.*')->escape('\') .. '\m'
+        cml_left = '\V' .. &commentstring->matchstr('\S*\ze\s*%s')->escape('\') .. '\m'
+        cml_right = '\V' .. &commentstring->matchstr('.*%s\s*\zs.*')->escape('\') .. '\m'
     endif
 
     # remove comment leader

@@ -16,9 +16,9 @@ def fold#adhoc#main() #{{{2
     endif
     b:title_like_in_markdown = true
     if InTerminalBuffer()
-        setl fdm=expr
-        &l:fde = "getline(v:lnum) =~ '^٪' ? '>1' : '='"
-        setl fdt=fold#fdt#get()
+        &l:foldmethod = 'expr'
+        &l:foldexpr = "getline(v:lnum) =~ '^٪' ? '>1' : '='"
+        &l:foldtext = 'fold#foldtext#get()'
         return
     endif
     runtime! ftplugin/markdown.vim
