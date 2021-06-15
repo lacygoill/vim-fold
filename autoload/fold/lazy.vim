@@ -28,7 +28,7 @@ var loaded = true
 #         enddef
 #         ino <expr> <c-k> repeat('<del>', 300)
 #         sil e /tmp/md.md
-#         :%d
+#         :% d
 #         put ='text'
 #         sil norm! yy300pG300Ax
 #     EOF
@@ -335,7 +335,7 @@ def fold#lazy#compute(noforce = true) #{{{2
         #     $ vim -Nu NONE -S <(cat <<'EOF'
         #         setl foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
         #         au BufWritePost * setl foldmethod=expr | eval foldlevel(1) | setl foldmethod=manual
-        #         :%d | sil pu =repeat(['x'], 5) | 1
+        #         :% d | sil put =repeat(['x'], 5) | 1
         #     EOF
         #     ) /tmp/md.md
         #
@@ -418,7 +418,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     #
     #     $ vim -Nu NONE -S <(cat <<'EOF'
     #         setl foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
-    #         :%d | pu =repeat(['x'], 5) | 1
+    #         :% d | put =repeat(['x'], 5) | 1
     #     EOF
     #     ) /tmp/file
     #     " insert:  #

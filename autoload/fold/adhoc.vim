@@ -33,9 +33,9 @@ def AddMarkers() #{{{2
     # same thing befored the summary at the end
     AddEmptyFold('FUNCTIONS SORTED')
     # marker for each function
-    sil keepj keepp :%s/^FUNCTION\s\+/## /e
+    sil keepj keepp :% s/^FUNCTION\s\+/## /e
     # marker for each script, and for the ending summaries
-    sil keepj keepp :%s/^SCRIPT\|^\zeFUNCTIONS SORTED/# /e
+    sil keepj keepp :% s/^SCRIPT\|^\zeFUNCTIONS SORTED/# /e
 enddef
 
 def AddEmptyFold(pat: string) #{{{2
