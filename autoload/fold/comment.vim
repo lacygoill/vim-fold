@@ -8,16 +8,16 @@ def fold#comment#main(type = ''): string
         &operatorfunc = 'fold#comment#main'
         return 'g@l'
     endif
-    exe "sil norm! V\<cmd>call comment#object#main()\r"
-    exe "norm! \e"
+    execute "silent normal! V\<Cmd>call comment#object#main()\<CR>"
+    execute "normal! \<Esc>"
     var cml: string = '\V'
         ..  &commentstring->matchstr('\S*\ze\s*%s')->escape('\')
         .. '\m'
     if getline("'>") !~ '^\s*' .. cml .. '\s*$'
-        exe "norm! o\e"
+        execute "normal! o\<Esc>"
     endif
-    exe "sil norm! V\<cmd>call comment#object#main()\r"
-    norm! zf
+    execute "silent normal! V\<Cmd>call comment#object#main()\<CR>"
+    normal! zf
     return ''
 enddef
 

@@ -48,14 +48,14 @@ def fold#motion#rhs(lhs: string): string #{{{2
     var cnt: number = v:count1
     # If we're in visual block mode, we can't pass `C-v` directly.{{{
     #
-    # Since  8.2.2062,  `<cmd>`  handles  `C-v`  just like  it  would  be  on  a
+    # Since  8.2.2062,  `<Cmd>`  handles  `C-v`  just like  it  would  be  on  a
     # command-line entered  with `:`. That  is, it's interpreted as  "insert the
     # next character literally".
     #
     # Solution: double `<C-v>`.
     #}}}
-    if mode == "\<c-v>"
-        mode = "\<c-v>\<c-v>"
+    if mode == "\<C-V>"
+        mode = "\<C-V>\<C-V>"
     endif
 
     # Why pressing Escape from visual mode?{{{
@@ -64,7 +64,7 @@ def fold#motion#rhs(lhs: string): string #{{{2
     # were controlling.  Otherwise,  it could be unexpectedly  positioned on the
     # other corner:
     #
-    #     $ vim -Nu NONE +"pu=['aaa', 'bbb', 'ccc']" +'norm! 1GVG'
+    #     $ vim -Nu NONE +"put =['aaa', 'bbb', 'ccc']" +'normal! 1GVG'
     #     " press:  colon C-u Enter
     #     " the cursor gets positioned on the first line instead of the last line
     #
@@ -84,8 +84,8 @@ def fold#motion#rhs(lhs: string): string #{{{2
     # E.g., we could have manually forced it to be characterwise or blockwise.
     # In those cases, we should not interfere; it would be unexpected.
     #}}}
-    return printf("%s%s\<cmd>call " .. "%s(%s, %s, %d)\<cr>",
-        index(['v', 'V', "\<c-v>\<c-v>"], mode) >= 0 ? "\e" : '',
+    return printf("%s%s\<Cmd>call " .. "%s(%s, %s, %d)\<CR>",
+        index(['v', 'V', "\<C-V>\<C-V>"], mode) >= 0 ? "\<Esc>" : '',
         mode == 'no' ? 'V' : '',
         function(Jump),
         string(lhs),
@@ -104,8 +104,8 @@ def Jump( #{{{2
 
     var fixed_corner: number
     if mode == 'n'
-        norm! m'
-    elseif mode =~ "^[vV\<c-v>]$"
+        normal! m'
+    elseif mode =~ "^[vV\<C-V>]$"
         # Line number of the corner of the selection which is "fixed". {{{
         #
         # I.e. we don't make it change because we are controlling the other corner.
@@ -120,7 +120,7 @@ def Jump( #{{{2
         Foldsavestate()
     endif
 
-    norm! zR
+    normal! zR
     for i in range(cnt)
         NextFold(lhs)
     endfor
@@ -130,13 +130,13 @@ def Jump( #{{{2
         && maparg('j', 'n', false, true)->get('rhs', '') !~ 'move_and_open_fold'
         Foldreststate()
     else
-        norm! zM
+        normal! zM
     endif
-    norm! zv
+    normal! zv
     Winrestview(view)
 
-    if mode =~ "^[vV\<c-v>]$"
-        exe 'norm! ' .. fixed_corner .. 'G' .. mode .. line('.') .. 'G'
+    if mode =~ "^[vV\<C-V>]$"
+        execute 'normal! ' .. fixed_corner .. 'G' .. mode .. line('.') .. 'G'
     endif
 enddef
 
@@ -146,10 +146,10 @@ def NextFold(lhs: string)
     var next: list<number>
     if lhs == '[z'
 
-        keepj norm! [z
+        keepjumps normal! [z
         next += [line('.')]
         cursor(orig, 1)
-        keepj norm! zk
+        keepjumps normal! zk
         next += [line('.')]
         next->filter((_, v: number): bool => v != orig)
         if empty(next)
@@ -164,7 +164,7 @@ def NextFold(lhs: string)
 
         # FIXME: Doesn't always work as expected.{{{
         #
-        #     $ vim --cmd 'let g:rust_fold=2 | setl filetype=rust foldcolumn=5' +'norm! GzR' <(curl -Ls https://raw.githubusercontent.com/BurntSushi/ripgrep/cb0dfda936748a7ca7a2d52d8b033bc48382d5f9/build.rs)
+        #     $ vim --cmd 'let g:rust_fold=2 | setlocal filetype=rust foldcolumn=5' +'normal! GzR' <(curl -Ls https://raw.githubusercontent.com/BurntSushi/ripgrep/cb0dfda936748a7ca7a2d52d8b033bc48382d5f9/build.rs)
         #     " press [z 7 times
         #     " the 7th time, we jump from 166 to 157
         #     " we should have jumped from 166 to 163 (then 162, then 157)
@@ -202,10 +202,10 @@ def NextFold(lhs: string)
 
     else
 
-        keepj norm! ]z
+        keepjumps normal! ]z
         next += [line('.')]
         cursor(orig, 1)
-        keepj norm! zj
+        keepjumps normal! zj
         next += [line('.')]
         next->filter((_, v: number): bool => v != orig)
         if empty(next)
@@ -244,9 +244,9 @@ def IsFoldStart(): bool
         return false
     endif
 
-    norm! zc
+    normal! zc
     var is_fold_start: bool = line('.') == foldclosed('.')
-    norm! zo
+    normal! zo
 
     return is_fold_start
 enddef
@@ -256,9 +256,9 @@ def IsFoldEnd(): bool
         return false
     endif
 
-    norm! zc
+    normal! zc
     var is_fold_end: bool = line('.') == foldclosedend('.')
-    norm! zo
+    normal! zo
 
     return is_fold_end
 enddef
@@ -281,11 +281,11 @@ def GetState(which_one: string): list<number>
         if foldlevel('.') <= 0
             return []
         endif
-        norm! zc
+        normal! zc
         if line('.') == foldclosed('.')
             return [line('.')]
         endif
-        norm! zo
+        normal! zo
     endif
     return []
 enddef
@@ -293,10 +293,10 @@ enddef
 def Foldreststate()
     var pos: list<number> = getcurpos()
     for lnum in state.open
-        exe 'norm! ' .. lnum .. 'Gzo'
+        execute 'normal! ' .. lnum .. 'Gzo'
     endfor
     for lnum in state.closed
-        exe 'norm! ' .. lnum .. 'Gzc'
+        execute 'normal! ' .. lnum .. 'Gzc'
     endfor
     setpos('.', pos)
 enddef

@@ -11,7 +11,7 @@ var loaded = true
 # MWE:
 #
 #     $ vim -Nu <(cat <<'EOF'
-#         setl foldmethod=expr foldexpr=MarkdownFold()
+#         setlocal foldmethod=expr foldexpr=MarkdownFold()
 #         def MarkdownFold(): any
 #             var line: string = getline(v:lnum)
 #             if line =~ '^#\+ '
@@ -26,11 +26,11 @@ var loaded = true
 #             endif
 #             return '='
 #         enddef
-#         ino <expr> <c-k> repeat('<del>', 300)
-#         sil e /tmp/md.md
-#         :% d
+#         inoremap <expr> <C-K> repeat('<Del>', 300)
+#         silent edit /tmp/md.md
+#         :% delete
 #         put ='text'
-#         sil norm! yy300pG300Ax
+#         silent normal! yy300pG300Ax
 #     EOF
 #     )
 #
@@ -69,7 +69,7 @@ var loaded = true
 # less costly  because it doesn't ask  Vim to recompute anything  every time you
 # edit the buffer.
 #
-# From `:h fold-methods`:
+# From `:help fold-methods`:
 #
 #    > Switching to  the "manual" method  doesn't remove the existing  folds.  This
 #    > can be  used to first  define the folds  automatically and then  change them
@@ -81,13 +81,13 @@ var loaded = true
 # When an autocmd installed after the ones from `vim-fold` resets `'foldmethod'`.
 # As an example, add this to `~/.vim/after/plugin/markdown.vim`:
 #
-#     au FileType markdown &l:foldmethod = 'expr'
+#     autocmd FileType markdown &l:foldmethod = 'expr'
 #
 # And disable the `BufWinEnter` autocmd in your markdown filetype plugin.
 # Finally, run:
 #
 #     $ vim
-#     :e /tmp/md.md
+#     :edit /tmp/md.md
 #
 # The foldmethod is set to 'expr'.
 #
@@ -168,9 +168,9 @@ var loaded = true
 #
 # Whatever value you use for `MIN_LINES`, make this experiment:
 #
-#                                       replace with the new number you want to use (minus 3)
-#                                       v-v  v-v
-#     $ vim +"%d | put='text' | norm! yy123pG123Ax" /tmp/md.md
+#                                                 replace with the new number you want to use (minus 3)
+#                                                 vvv  vvv
+#     $ vim +":% delete | put ='text' | normal! yy123pG123Ax" /tmp/md.md
 #     " make sure that 'foldmethod' is 'expr'
 #     " press:  I C-k C-k
 #
@@ -230,8 +230,8 @@ def fold#lazy#computeWindows() #{{{2
         #         ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
         #         ->mapnew((_, v: number) => win_execute(v, [
         #             'fold#lazy#compute(false)',
-        #             'exe ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
-        #                 ? "norm! ' .. curlnum .. 'Gzv"
+        #             'execute ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
+        #                 ? "normal! ' .. curlnum .. 'Gzv"
         #                 : ""'
         #             ]))
         #
@@ -261,7 +261,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     #
     #     $ vimdiff /tmp/md1.md /tmp/md2.md
     #     :tabnew
-    #     :e /tmp/md2.md
+    #     :edit /tmp/md2.md
     #     :echo &l:foldmethod
     #     expr˜
     #     " it should be 'manual'
@@ -333,14 +333,14 @@ def fold#lazy#compute(noforce = true) #{{{2
         # MWE:
         #
         #     $ vim -Nu NONE -S <(cat <<'EOF'
-        #         setl foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
-        #         au BufWritePost * setl foldmethod=expr | eval foldlevel(1) | setl foldmethod=manual
-        #         :% d | sil put =repeat(['x'], 5) | 1
+        #         setlocal foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
+        #         autocmd BufWritePost * setlocal foldmethod=expr | eval foldlevel(1) | setlocal foldmethod=manual
+        #         :% delete | silent put =repeat(['x'], 5) | :1
         #     EOF
         #     ) /tmp/md.md
         #
-        #     " press:  O # Esc :w  (the fold is closed automatically)
-        #     " press:  O # Esc :w  (the fold is closed automatically if 'foldminlines' is 0)
+        #     " press:  O # Esc :write  (the fold is closed automatically)
+        #     " press:  O # Esc :write  (the fold is closed automatically if 'foldminlines' is 0)
         #
         # I think that for the issue to be reproduced, you need to:
         #
@@ -358,7 +358,7 @@ def fold#lazy#compute(noforce = true) #{{{2
         # before computing the fold level of the current line).
         #}}}
         if was_visible && foldclosed('.') >= 0
-            # Do *not* move `norm! zv` in `#compute_windows()`.{{{
+            # Do *not* move `normal! zv` in `#compute_windows()`.{{{
             #
             # The latter is only invoked on certain events:
             #
@@ -370,9 +370,9 @@ def fold#lazy#compute(noforce = true) #{{{2
             #
             # E.g.  we  manually  call  `#compute()` from  `Jump()`  (called  by
             # `fold#motion#rhs()`).
-            # If you moved `:norm! zv`  in `#compute_windows()`, it would not be
-            # executed when we  press `]z`, which would prevent  the latter from
-            # moving the cursor to the end of a *new* open fold.
+            # If you moved  `:normal! zv` in `#compute_windows()`,  it would not
+            # be executed  when we  press `]z`, which  would prevent  the latter
+            # from moving the cursor to the end of a *new* open fold.
             #
             # It would work only after pressing it twice.
             # Indeed,  the first  time,  the fold  would be  closed  as soon  as
@@ -381,16 +381,16 @@ def fold#lazy#compute(noforce = true) #{{{2
             #     &l:foldmethod = b:last_foldmethod
             #
             # Btw, the reason why the fold seems to stay open is because `#go()`
-            # runs `:norm! zv`  at the end; but it *is*  temporarily closed, and
+            # runs `:normal! zv` at the end; but it *is* temporarily closed, and
             # it  *is* closed  right  before  `]z` is  pressed  by `#go()`  (via
-            # `:norm`) for the first time in a new fold.
+            # `:normal`) for the first time in a new fold.
             #}}}
-            # `:norm! zv` may be executed in an inactive window.{{{
+            # `:normal! zv` may be executed in an inactive window.{{{
             #
             # Which is ok.
             # It happens when `FileType` or `BufWritePost` are fired.
             #
-            # `:norm! zv` is helpful when the buffer is reloaded (e.g. with `:e`).
+            # `:normal! zv` is helpful when the buffer is reloaded (e.g. with `:edit`).
             # When that happens:
             #
             #    - all the folds are deleted in all the windows displaying the buffer
@@ -401,11 +401,11 @@ def fold#lazy#compute(noforce = true) #{{{2
             #
             #    - the new folds are closed (if `'foldlevel'` is 0)
             #
-            # If `norm! zv` was not executed in an inactive window, we would not
-            # see the  contents of its  current fold  when we reload  the buffer
+            # If `normal! zv`  was not executed in an inactive  window, we would
+            # not see the contents of its current fold when we reload the buffer
             # from another window.  I prefer to see it.
             #}}}
-            norm! zv
+            normal! zv
         endif
     endif
 
@@ -417,25 +417,25 @@ def fold#lazy#compute(noforce = true) #{{{2
     # Without, there is a risk that no fold would be created:
     #
     #     $ vim -Nu NONE -S <(cat <<'EOF'
-    #         setl foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
-    #         :% d | put =repeat(['x'], 5) | 1
+    #         setlocal foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
+    #         :% delete | put =repeat(['x'], 5) | :1
     #     EOF
     #     ) /tmp/file
     #     " insert:  #
-    #     " run:  setl foldmethod=expr | setl foldmethod=manual
+    #     " run:  setlocal foldmethod=expr | setlocal foldmethod=manual
     #     " no fold is created;
     #     " but a fold would have been created if you had run:
     #
-    #         :setl foldmethod=expr | eval foldlevel(1) | setl foldmethod=manual
+    #         :setlocal foldmethod=expr | eval foldlevel(1) | setlocal foldmethod=manual
     #
     #      or
     #
-    #         :setl foldmethod=expr | exe '1windo "' | setl foldmethod=manual
+    #         :setlocal foldmethod=expr | execute ':1 windo "' | setlocal foldmethod=manual
     #
     #      or
     #
-    #         :setl foldmethod=expr
-    #         :setl manual
+    #         :setlocal foldmethod=expr
+    #         :setlocal manual
     #
     # ---
     #
@@ -443,7 +443,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     # relies on  a side effect  of `:windo`  for folds  to be  recomputed before
     # resetting the foldmethod to manual.
     #}}}
-    #   Why not `:norm! zx`?{{{
+    #   Why not `:normal! zx`?{{{
     #
     # It does not preserve manually opened/closed folds.
     # Note that `winsaveview()` does not save fold information.

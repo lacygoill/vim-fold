@@ -5,13 +5,13 @@ var loaded = true
 
 # Mappings {{{1
 
-nno H <cmd>call fold#collapseExpand#hlm('H')<cr>
-nno L <cmd>call fold#collapseExpand#hlm('L')<cr>
-nno M <cmd>call fold#collapseExpand#hlm('M')<cr>
+nnoremap H <Cmd>call fold#collapseExpand#hlm('H')<CR>
+nnoremap L <Cmd>call fold#collapseExpand#hlm('L')<CR>
+nnoremap M <Cmd>call fold#collapseExpand#hlm('M')<CR>
 
 # Purpose: automatically add an empty line at the end of a multi-line comment so
 # that the end marker of the fold is on a dedicated line.
-nno <expr><unique> zfic fold#comment#main()
+nnoremap <expr><unique> zfic fold#comment#main()
 
 # Why don't you use an autocmd to automatically fold a logfile?{{{
 #
@@ -22,27 +22,37 @@ nno <expr><unique> zfic fold#comment#main()
 #    Folding a big file can be slow.
 #    We should not pay this price systematically, only when we decide.
 #}}}
-nno <unique> za <cmd>call fold#adhoc#main()<cr>
+nnoremap <unique> za <Cmd>call fold#adhoc#main()<CR>
 
 noremap <expr><unique> [z fold#motion#rhs('[z')
 noremap <expr><unique> ]z fold#motion#rhs(']z')
 
 ['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x']
-    ->map((_, v: string) => execute(
-            'nno z' .. v
-            .. ' <cmd>call fold#lazy#compute()<bar>exe "norm! " .. (v:count ? v:count : "") .. "z' .. v .. '"<cr>'))
-nno <space><space> <cmd>call fold#lazy#compute()<bar>exe 'norm! ' .. (v:count ? v:count : '') .. 'za'<cr>
+->mapnew((_, v: string) => {
+    execute 'nnoremap z' .. v
+    .. ' <Cmd>call fold#lazy#compute() <Bar> execute "normal! " .. (v:count ? v:count : "") .. "z' .. v .. '"<CR>'
+})
+# Don't use `:normal` to execute `za`.{{{
+#
+#     nnoremap <Space><Space> <Cmd>... execute 'normal! ' .. (v:count ? v:count : '') .. 'za'<CR>
+#                                               ^----^
+#                                                 ✘
+#
+# It would cause the cursor to be in a wrong position when closing a fold:
+# https://github.com/vim/vim/issues/8480
+#}}}
+nnoremap <Space><Space> <Cmd>call fold#lazy#compute() <Bar> call feedkeys((v:count ? v:count : '') .. 'za', 'nt')<CR>
 
 # I think that we sometimes try to open a fold from visual mode by accident.
 # It leads to an unexpected visual selection; let's prevent this from happening.
-xno <space><space> <c-\><c-n>
+xnoremap <Space><Space> <C-\><C-N>
 
 # Autocmds{{{1
 
-augroup LazyFold | au!
+augroup LazyFold | autocmd!
     # recompute folds in all windows displaying the current buffer,
     # after saving it or after the foldmethod has been set by a filetype plugin
-    au BufWritePost,FileType * fold#lazy#computeWindows()
+    autocmd BufWritePost,FileType * fold#lazy#computeWindows()
 
     # restore folds after a diff{{{
     #
@@ -57,11 +67,11 @@ augroup LazyFold | au!
     #
     #    > Resets related options also when 'diff' was not set.
     #
-    # Source: `:h :diffoff`.
+    # Source: `:help :diffoff`.
     #
     # However, the folds have been lost when `'diff'` was set.
     # We need  to make Vim recompute  them according to the  original foldmethod
     # (the one set by our filetype plugin).
     #}}}
-    au OptionSet diff fold#lazy#handleDiff()
+    autocmd OptionSet diff fold#lazy#handleDiff()
 augroup END
