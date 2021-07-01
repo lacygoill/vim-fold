@@ -27,21 +27,21 @@ nnoremap <unique> za <Cmd>call fold#adhoc#main()<CR>
 noremap <expr><unique> [z fold#motion#rhs('[z')
 noremap <expr><unique> ]z fold#motion#rhs(']z')
 
-['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x']
-->mapnew((_, v: string) => {
-    execute 'nnoremap z' .. v
-    .. ' <Cmd>call fold#lazy#compute() <Bar> execute "normal! " .. (v:count ? v:count : "") .. "z' .. v .. '"<CR>'
-})
-# Don't use `:normal` to execute `za`.{{{
+# Don't use `:normal` to execute these `z*` commands.{{{
 #
-#     nnoremap <Space><Space> <Cmd>... execute 'normal! ' .. (v:count ? v:count : '') .. 'za'<CR>
-#                                               ^----^
-#                                                 ✘
+#     nnoremap ... <Cmd>... execute 'normal! ' .. (v:count ? v:count : '') .. 'z...'<CR>
+#                                    ^----^
+#                                      ✘
 #
 # It would cause the cursor to be in a wrong position when closing a fold:
 # https://github.com/vim/vim/issues/8480
 #}}}
-nnoremap <Space><Space> <Cmd>call fold#lazy#compute()<CR>za
+['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x']
+->mapnew((_, v: string) => {
+    execute 'nnoremap z' .. v
+    .. ' <Cmd>call fold#lazy#compute()<CR>@=(v:count ? v:count : "") .. "z' .. v .. '"<CR>'
+})
+nnoremap <Space><Space> <Cmd>call fold#lazy#compute()<CR>@=(v:count ? v:count : '') .. 'za'<CR>
 
 # I think that we sometimes try to open a fold from visual mode by accident.
 # It leads to an unexpected visual selection; let's prevent this from happening.
