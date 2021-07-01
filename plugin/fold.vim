@@ -41,7 +41,7 @@ noremap <expr><unique> ]z fold#motion#rhs(']z')
 # It would cause the cursor to be in a wrong position when closing a fold:
 # https://github.com/vim/vim/issues/8480
 #}}}
-nnoremap <Space><Space> <Cmd>call fold#lazy#compute() <Bar> call feedkeys((v:count ? v:count : '') .. 'za', 'in')<CR>
+nnoremap <Space><Space> <Cmd>call fold#lazy#compute()<CR>za
 
 # I think that we sometimes try to open a fold from visual mode by accident.
 # It leads to an unexpected visual selection; let's prevent this from happening.
