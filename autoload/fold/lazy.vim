@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # FAQ{{{
 # What's the purpose of this script?{{{
 #
@@ -10,29 +7,26 @@ var loaded = true
 #
 # MWE:
 #
-#     $ vim -Nu <(cat <<'EOF'
-#         setlocal foldmethod=expr foldexpr=MarkdownFold()
-#         def MarkdownFold(): any
-#             var line: string = getline(v:lnum)
-#             if line =~ '^#\+ '
-#                 return '>' .. match(line, ' ')
-#             endif
-#             var nextline: string = getline(v:lnum + 1)
-#             if line =~ '^.\+$' && nextline =~ '^=\+$'
-#                 return '>1'
-#             endif
-#             if line =~ '^.\+$' && nextline =~ '^-\+$'
-#                 return '>2'
-#             endif
-#             return '='
-#         enddef
-#         inoremap <expr> <C-K> repeat('<Del>', 300)
-#         silent edit /tmp/md.md
-#         :% delete
-#         put ='text'
-#         silent normal! yy300pG300Ax
-#     EOF
-#     )
+#     setlocal foldmethod=expr foldexpr=MarkdownFold()
+#     def g:MarkdownFold(): any
+#         var line: string = getline(v:lnum)
+#         if line =~ '^#\+ '
+#             return '>' .. match(line, ' ')
+#         endif
+#         var nextline: string = getline(v:lnum + 1)
+#         if line =~ '^.\+$' && nextline =~ '^=\+$'
+#             return '>1'
+#         endif
+#         if line =~ '^.\+$' && nextline =~ '^-\+$'
+#             return '>2'
+#         endif
+#         return '='
+#     enddef
+#     inoremap <expr> <C-K> repeat('<Del>', 300)
+#     silent edit /tmp/md.md
+#     :% delete
+#     'text'->setline(1)
+#     silent normal! yy300pG300Ax
 #
 # Vim takes several seconds to start.
 # Now, press `I C-k` to delete the rest of the line.
@@ -106,8 +100,9 @@ var loaded = true
 # Solution: on `VimEnter` invoke `fold#lazy#compute()` in *all* windows
 # (*in addition to installing the autocmds*):
 #
-#     getwininfo()
-#         ->mapnew((_, v: dict<any>) => win_execute(v.winid, 'fold#lazy#compute(false)'))
+#     for d: dict<any> in getwininfo()
+#         win_execute(v.winid, 'fold#lazy#compute(false)')
+#     endfor
 #
 # See:
 # https://github.com/Konfekt/FastFold/issues/30
@@ -164,15 +159,15 @@ var loaded = true
 #
 # ---
 #
-# If you choose a too big value, you may experience lag too frequently.
+# If you choose a too big value, you might experience lag too frequently.
 #
 # Whatever value you use for `MIN_LINES`, make this experiment:
 #
 #                                                 replace with the new number you want to use (minus 3)
 #                                                 vvv  vvv
 #     $ vim +":% delete | put ='text' | normal! yy123pG123Ax" /tmp/md.md
-#     " make sure that 'foldmethod' is 'expr'
-#     " press:  I C-k C-k
+#     # make sure that 'foldmethod' is 'expr'
+#     # press:  I C-k C-k
 #
 # Check how much time it takes for Vim to remove all the characters.
 # Choose a value for which the time is acceptable.
@@ -217,8 +212,8 @@ var loaded = true
 def fold#lazy#computeWindows() #{{{2
     # compute folds in each window displaying the current buffer; not just the current window
     var curbuf: number = bufnr('%')
-    getwininfo()
-        ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
+    for d: dict<any> in getwininfo()
+      ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
         # When I save a new fold, it stays open in the current window (✔), but not in an inactive one (✘)!{{{
         #
         # Use this block instead:
@@ -226,14 +221,15 @@ def fold#lazy#computeWindows() #{{{2
         #     var curlnum: number = line('.')
         #     var was_visible: bool = foldclosed('.') == -1
         #     var curbuf: number = bufnr('%')
-        #     getwininfo()
+        #     for d: dict<any> in getwininfo()
         #         ->filter((_, v: dict<any>): bool => v.bufnr == curbuf)
-        #         ->mapnew((_, v: number) => win_execute(v, [
+        #         win_execute(d.winid, [
         #             'fold#lazy#compute(false)',
         #             'execute ' .. was_visible .. ' && foldclosed(' .. curlnum .. ') >= 0
         #                 ? "normal! ' .. curlnum .. 'Gzv"
         #                 : ""'
-        #             ]))
+        #             ])
+        #     endfor
         #
         # The issue is due to the fact that the current line in inactive windows
         # is not synchronized with the current line in the active window.
@@ -251,10 +247,11 @@ def fold#lazy#computeWindows() #{{{2
         # there, you can't say that its state has not been preserved; it did not
         # have a state to begin with.
         #}}}
-        ->mapnew((_, v: dict<any>) => win_execute(v.winid, 'fold#lazy#compute(false)'))
+        win_execute(d.winid, 'fold#lazy#compute(false)')
+    endfor
 enddef
 
-def fold#lazy#compute(noforce = true) #{{{2
+def fold#lazy#compute(noforce = true): string #{{{2
     # Why not just inspecting `&l:diff`?{{{
     #
     # It would cause this issue:
@@ -264,13 +261,13 @@ def fold#lazy#compute(noforce = true) #{{{2
     #     :edit /tmp/md2.md
     #     :echo &l:foldmethod
     #     expr˜
-    #     " it should be 'manual'
+    #     # it should be 'manual'
     #
     # That's because the window in the new  tab page has copied the local values
     # of some options from a diffed window (including `'diff'` which is set).
     #}}}
     if &l:foldmethod == 'diff'
-        return
+        return ''
     endif
     # If the file is to be skipped, make sure `b:last_foldmethod` does not exist.{{{
     #
@@ -279,7 +276,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     #}}}
     if ShouldSkip()
         unlet! b:last_foldmethod b:lazyfold_changedtick
-        return
+        return ''
     endif
 
     # To improve performance, bail out if folds have been recomputed recently.
@@ -319,7 +316,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     # We probably expect Vim to recompute the fold when we press `SPC SPC` inside.
     #}}}
     if noforce && b:changedtick == get(b:, 'lazyfold_changedtick')
-        return
+        return ''
     endif
     b:lazyfold_changedtick = b:changedtick
 
@@ -332,15 +329,22 @@ def fold#lazy#compute(noforce = true) #{{{2
         #
         # MWE:
         #
-        #     $ vim -Nu NONE -S <(cat <<'EOF'
-        #         setlocal foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
-        #         autocmd BufWritePost * setlocal foldmethod=expr | eval foldlevel(1) | setlocal foldmethod=manual
-        #         :% delete | silent put =repeat(['x'], 5) | :1
-        #     EOF
-        #     ) /tmp/md.md
+        #     edit /tmp/file
+        #     setlocal foldminlines=0
+        #     setlocal foldmethod=manual
+        #     setlocal foldexpr=FoldExpr()
+        #     def g:FoldExpr(): string
+        #         return getline(v:lnum) =~ '^#' ? '>1' : '='
+        #     enddef
+        #     autocmd BufWritePost * setlocal foldmethod=expr
+        #         | eval foldlevel(1)
+        #         | setlocal foldmethod=manual
+        #     :% delete
+        #     ['x']->repeat(5)->setline(1)
+        #     :1
         #
-        #     " press:  O # Esc :write  (the fold is closed automatically)
-        #     " press:  O # Esc :write  (the fold is closed automatically if 'foldminlines' is 0)
+        #     # press:  O # Esc :write  (the fold is closed automatically)
+        #     # press:  O # Esc :write  (the fold is closed automatically if 'foldminlines' is 0)
         #
         # I think that for the issue to be reproduced, you need to:
         #
@@ -416,26 +420,30 @@ def fold#lazy#compute(noforce = true) #{{{2
     # To make sure Vim recomputes folds, before we reset the foldmethod to manual.
     # Without, there is a risk that no fold would be created:
     #
-    #     $ vim -Nu NONE -S <(cat <<'EOF'
-    #         setlocal foldminlines=0 foldmethod=manual foldexpr=getline(v:lnum)=~'^#'?'>1':'='
-    #         :% delete | put =repeat(['x'], 5) | :1
-    #     EOF
-    #     ) /tmp/file
-    #     " insert:  #
-    #     " run:  setlocal foldmethod=expr | setlocal foldmethod=manual
-    #     " no fold is created;
-    #     " but a fold would have been created if you had run:
+    #     setlocal foldminlines=0
+    #     setlocal foldmethod=manual
+    #     setlocal foldexpr=FoldExpr()
+    #     def g:FoldExpr(): string
+    #         return getline(v:lnum) =~ '^#' ? '>1' : '='
+    #     enddef
+    #     :% delete
+    #     ['x']->repeat(5)->setline(1)
+    #     :1
+    #     # insert: #
+    #     # run: setlocal foldmethod=expr | setlocal foldmethod=manual
     #
-    #         :setlocal foldmethod=expr | eval foldlevel(1) | setlocal foldmethod=manual
+    # No fold is created; but a fold would have been created if you had run:
     #
-    #      or
+    #     :setlocal foldmethod=expr | eval foldlevel(1) | setlocal foldmethod=manual
     #
-    #         :setlocal foldmethod=expr | execute ':1 windo "' | setlocal foldmethod=manual
+    # Or:
     #
-    #      or
+    #     :setlocal foldmethod=expr | execute ':1 windo "' | setlocal foldmethod=manual
     #
-    #         :setlocal foldmethod=expr
-    #         :setlocal manual
+    # Or:
+    #
+    #     :setlocal foldmethod=expr
+    #     :setlocal manual
     #
     # ---
     #
@@ -458,6 +466,7 @@ def fold#lazy#compute(noforce = true) #{{{2
     #}}}
     legacy eval foldlevel(1)
     &l:foldmethod = 'manual'
+    return ''
 enddef
 
 def fold#lazy#handleDiff() #{{{2

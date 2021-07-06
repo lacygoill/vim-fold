@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 def fold#foldtext#get(): string #{{{1
     var foldstartline: string = getline(v:foldstart)
     var indent: string

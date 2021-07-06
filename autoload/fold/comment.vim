@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 def fold#comment#main(type = ''): string
     if type == ''
         &operatorfunc = 'fold#comment#main'

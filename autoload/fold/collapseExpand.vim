@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 def fold#collapseExpand#hlm(key: string)
     var cnt: number = v:count
     if cnt != 0 && key != 'M'

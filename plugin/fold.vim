@@ -5,9 +5,9 @@ var loaded = true
 
 # Mappings {{{1
 
-nnoremap H <Cmd>call fold#collapseExpand#hlm('H')<CR>
-nnoremap L <Cmd>call fold#collapseExpand#hlm('L')<CR>
-nnoremap M <Cmd>call fold#collapseExpand#hlm('M')<CR>
+nnoremap <unique> H <Cmd>call fold#collapseExpand#hlm('H')<CR>
+nnoremap <unique> L <Cmd>call fold#collapseExpand#hlm('L')<CR>
+nnoremap <unique> M <Cmd>call fold#collapseExpand#hlm('M')<CR>
 
 # Purpose: automatically add an empty line at the end of a multi-line comment so
 # that the end marker of the fold is on a dedicated line.
@@ -24,28 +24,39 @@ nnoremap <expr><unique> zfic fold#comment#main()
 #}}}
 nnoremap <unique> za <Cmd>call fold#adhoc#main()<CR>
 
-noremap <expr><unique> [z fold#motion#rhs('[z')
-noremap <expr><unique> ]z fold#motion#rhs(']z')
+map <unique> ]z <Plug>(next-fold)
+map <unique> [z <Plug>(prev-fold)
+noremap <expr> <Plug>(next-fold) fold#motion#rhs(']z')
+noremap <expr> <Plug>(prev-fold) fold#motion#rhs('[z')
 
-# Don't use `:normal` to execute these `z*` commands.{{{
-#
-#     nnoremap ... <Cmd>... execute 'normal! ' .. (v:count ? v:count : '') .. 'z...'<CR>
-#                                    ^----^
-#                                      ✘
-#
-# It would cause the cursor to be in a wrong position when closing a fold:
-# https://github.com/vim/vim/issues/8480
-#}}}
-['A', 'C', 'M', 'O', 'R', 'X', 'c', 'o', 'v', 'x']
-->mapnew((_, v: string) => {
-    execute 'nnoremap z' .. v
-    .. ' <Cmd>call fold#lazy#compute()<CR>@=(v:count ? v:count : "") .. "z' .. v .. '"<CR>'
-})
-nnoremap <Space><Space> <Cmd>call fold#lazy#compute()<CR>@=(v:count ? v:count : '') .. 'za'<CR>
+# Make sure  that all normal folding  commands recompute the folds  (i.e. invoke
+# our `fold#lazy#compute()`).
+def WrapFoldCommands()
+    var fold_cmds: list<string> =<< trim END
+        zA
+        zC
+        zM
+        zO
+        zR
+        zX
+        zc
+        zo
+        zv
+        zx
+    END
+    var mapcmd: string = 'nnoremap <unique> %s'
+        .. ' <Cmd>call fold#lazy#compute()'
+        .. ' <Bar> execute "normal! " .. (v:count ? v:count : "") .. "%s"<CR>'
+    for cmd in fold_cmds
+        execute printf(mapcmd, cmd, cmd)
+    endfor
+    execute printf(mapcmd, '<space><space>', 'za')
+enddef
+WrapFoldCommands()
 
 # I think that we sometimes try to open a fold from visual mode by accident.
 # It leads to an unexpected visual selection; let's prevent this from happening.
-xnoremap <Space><Space> <C-\><C-N>
+xnoremap <unique> <Space><Space> <C-\><C-N>
 
 # Autocmds{{{1
 

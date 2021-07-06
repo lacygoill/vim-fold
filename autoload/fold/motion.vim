@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 # Specification{{{
 #
 # `]z` should move the cursor to:
@@ -64,9 +61,10 @@ def fold#motion#rhs(lhs: string): string #{{{2
     # were controlling.  Otherwise,  it could be unexpectedly  positioned on the
     # other corner:
     #
-    #     $ vim -Nu NONE +"put =['aaa', 'bbb', 'ccc']" +'normal! 1GVG'
-    #     " press:  colon C-u Enter
-    #     " the cursor gets positioned on the first line instead of the last line
+    #     ['aaa', 'bbb', 'ccc']->setline(1)
+    #     normal! 1GVG
+    #     # press: colon C-u Enter
+    #     # the cursor gets positioned on the first line instead of the last line
     #
     # ---
     #
@@ -87,7 +85,7 @@ def fold#motion#rhs(lhs: string): string #{{{2
     return printf("%s%s\<Cmd>call " .. "%s(%s, %s, %d)\<CR>",
         index(['v', 'V', "\<C-V>\<C-V>"], mode) >= 0 ? "\<Esc>" : '',
         mode == 'no' ? 'V' : '',
-        function(Jump),
+        Jump,
         string(lhs),
         string(mode),
         cnt)
@@ -165,9 +163,9 @@ def NextFold(lhs: string)
         # FIXME: Doesn't always work as expected.{{{
         #
         #     $ vim --cmd 'let g:rust_fold=2 | setlocal filetype=rust foldcolumn=5' +'normal! GzR' <(curl -Ls https://raw.githubusercontent.com/BurntSushi/ripgrep/cb0dfda936748a7ca7a2d52d8b033bc48382d5f9/build.rs)
-        #     " press [z 7 times
-        #     " the 7th time, we jump from 166 to 157
-        #     " we should have jumped from 166 to 163 (then 162, then 157)
+        #     # press [z 7 times
+        #     # the 7th time, we jump from 166 to 157
+        #     # we should have jumped from 166 to 163 (then 162, then 157)
         #
         # This could be fixed by replacing `if moved_just_above` with:
         #

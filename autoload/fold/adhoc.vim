@@ -1,8 +1,5 @@
 vim9script noclear
 
-if exists('loaded') | finish | endif
-var loaded = true
-
 import InTerminalBuffer from 'lg.vim'
 
 # Interface {{{1
