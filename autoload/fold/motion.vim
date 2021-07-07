@@ -119,7 +119,7 @@ def Jump( #{{{2
     endif
 
     normal! zR
-    for i: number in range(cnt)
+    for _ in range(cnt)
         NextFold(lhs)
     endfor
 

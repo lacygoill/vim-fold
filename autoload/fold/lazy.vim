@@ -101,7 +101,7 @@ vim9script noclear
 # (*in addition to installing the autocmds*):
 #
 #     for d: dict<any> in getwininfo()
-#         win_execute(v.winid, 'fold#lazy#compute(false)')
+#         win_execute(d.winid, 'fold#lazy#compute(false)')
 #     endfor
 #
 # See:
