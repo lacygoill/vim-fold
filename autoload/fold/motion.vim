@@ -119,7 +119,7 @@ def Jump( #{{{2
     endif
 
     normal! zR
-    for i in range(cnt)
+    for i: number in range(cnt)
         NextFold(lhs)
     endfor
 
@@ -290,10 +290,10 @@ enddef
 
 def Foldreststate()
     var pos: list<number> = getcurpos()
-    for lnum in state.open
+    for lnum: number in state.open
         execute 'normal! ' .. lnum .. 'Gzo'
     endfor
-    for lnum in state.closed
+    for lnum: number in state.closed
         execute 'normal! ' .. lnum .. 'Gzc'
     endfor
     setpos('.', pos)

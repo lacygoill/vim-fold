@@ -47,7 +47,7 @@ def WrapFoldCommands()
     var mapcmd: string = 'nnoremap <unique> %s'
         .. ' <Cmd>call fold#lazy#compute()'
         .. ' <Bar> execute "normal! " .. (v:count ? v:count : "") .. "%s"<CR>'
-    for cmd in fold_cmds
+    for cmd: string in fold_cmds
         execute printf(mapcmd, cmd, cmd)
     endfor
     execute printf(mapcmd, '<space><space>', 'za')
